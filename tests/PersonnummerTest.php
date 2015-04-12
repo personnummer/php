@@ -49,5 +49,4 @@ class PersonnummerTest extends PHPUnit_Framework_TestCase {
     $this->assertFalse(Personnummer::valid('640893-3231'));
   }
 
-
 }
