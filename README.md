@@ -1,4 +1,4 @@
-# php-is-personnummer [![Build Status](https://travis-ci.org/frozzare/php-is-personnummer.svg?branch=master)](https://travis-ci.org/frozzare/php-is-personnummer)
+# php-personnummer [![Build Status](https://travis-ci.org/frozzare/php-is-personnummer.svg?branch=master)](https://travis-ci.org/frozzare/php-is-personnummer)
 
 Validate Swedish personal identity numbers.
 
