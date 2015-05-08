@@ -1,5 +1,5 @@
 {
-  "name": "frozzare/is-personnummer",
+  "name": "frozzare/personnummer",
   "type": "utility",
   "license": "MIT",
   "description": "Validate Swedish personal identify numbers",
