@@ -5,7 +5,7 @@ Validate Swedish personal identity numbers.
 ## Installation
 
 ```
-$ composer require frozzare/is-personnummer 1.0.0
+$ composer require frozzare/personnummer 1.0.0
 ```
 
 ## Example
