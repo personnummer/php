@@ -9,7 +9,6 @@ final class Personnummer {
    *
    * @return int
    */
-
   private static function luhn ($str) {
 	$v   = 0;
 	$sum = 0;
@@ -37,7 +36,6 @@ final class Personnummer {
    *
    * @return bool
    */
-
   private static function testDate($year, $month, $day) {
 	try {
 	  date_default_timezone_set('Europe/Stockholm');
@@ -64,7 +62,6 @@ final class Personnummer {
    *
    * @return bool
    */
-
   public static function valid($str) {
 	if (!is_numeric($str) && !is_string($str)) {
 	  return false;
