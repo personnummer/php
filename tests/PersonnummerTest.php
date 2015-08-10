@@ -26,7 +26,7 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
     public function testPersonnummerWithWrongTypes()
     {
         $this->assertFalse(Personnummer::valid(null));
-        $this->assertFalse(Personnummer::valid([]));
+        $this->assertFalse(Personnummer::valid(array()));
         $this->assertFalse(Personnummer::valid(true));
         $this->assertFalse(Personnummer::valid(false));
         $this->assertFalse(Personnummer::valid(100101001));
