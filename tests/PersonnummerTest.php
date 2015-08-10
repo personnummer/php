@@ -1,6 +1,10 @@
 <?php
 
-class PersonnummerTest extends PHPUnit_Framework_TestCase {
+namespace Frozzare\Tests\Personnummer;
+
+use Frozzare\Personnummer\Personnummer;
+
+class PersonnummerTest extends \PHPUnit_Framework_TestCase {
 
   public function testPersonnummerWithControlDigit() {
     $this->assertTrue(Personnummer::valid(6403273813));

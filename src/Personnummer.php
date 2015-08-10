@@ -1,5 +1,10 @@
 <?php
 
+namespace Frozzare\Personnummer;
+
+use Datetime;
+use Exception;
+
 final class Personnummer {
 
   /**

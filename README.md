@@ -11,10 +11,10 @@ $ composer require frozzare/personnummer
 ## Example
 
 ```php
-\Personnummer::valid(6403273813);
+\Frozzare\Personnummer\Personnummer::valid(6403273813);
 //=> true
 
-\Personnummer::valid('19130401+2931');
+\Frozzare\Personnummer\Personnummer::valid('19130401+2931');
 //=> true
 ```
 

@@ -16,15 +16,23 @@
     "identify"
   ],
   "support": {
-    "issues": "https://github.com/frozzare/php-is-personnummer/issues"
+    "issues": "https://github.com/frozzare/php-personnummer/issues"
   },
   "require": {
     "php": ">=5.3.0",
     "composer/installers": "~1.0"
   },
+  "require-dev": {
+    "phpunit/phpunit": "~4.0"
+  },
   "autoload": {
-    "files": [
-      "src/Personnummer.php"
-    ]
+    "psr-4": {
+      "Frozzare\\Personnummer\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Frozzare\\Tests\\Personnummer\\": "tests/"
+    }
   }
 }
