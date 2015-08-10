@@ -56,7 +56,9 @@ final class Personnummer
                 $day = '0'.$day;
             }
 
-            return !(substr($date->format('Y'), 2) !== strval($year) || $date->format('m') !== strval($month) || $date->format('d') !== strval($day));
+            return !(substr($date->format('Y'), 2) !== strval($year) ||
+              $date->format('m') !== strval($month) ||
+              $date->format('d') !== strval($day));
         } catch (Exception $e) {
             return false;
         }
