@@ -7,15 +7,15 @@ use Exception;
 
 final class Personnummer
 {
-	/**
+    /**
      * The Luhn algorithm.
      *
      * @param string str
      *
      * @return int
      */
-	private static function luhn($str)
-	{
+    private static function luhn($str)
+    {
         $v = 0;
         $sum = 0;
 
@@ -33,16 +33,16 @@ final class Personnummer
         return intval(ceil($sum / 10) * 10 - $sum);
     }
 
-	/**
-	 * Test date if luhn is true.
-	 *
-	 * @param string|int $year
-	 * @param string|int $month
-	 * @param string|int $day
-	 *
-	 * @return bool
-	 */
-	private static function testDate($year, $month, $day)
+    /**
+     * Test date if luhn is true.
+     *
+     * @param string|int $year
+     * @param string|int $month
+     * @param string|int $day
+     *
+     * @return bool
+     */
+    private static function testDate($year, $month, $day)
     {
         try {
             date_default_timezone_set('Europe/Stockholm');
@@ -62,14 +62,14 @@ final class Personnummer
         }
     }
 
-	/**
-	 * Validate Swedish personal identify numbers.
-	 *
-	 * @param string|int $str
-	 *
-	 * @return bool
-	 */
-	public static function valid($str)
+    /**
+     * Validate Swedish personal identify numbers.
+     *
+     * @param string|int $str
+     *
+     * @return bool
+     */
+    public static function valid($str)
     {
         if (!is_numeric($str) && !is_string($str)) {
             return false;
