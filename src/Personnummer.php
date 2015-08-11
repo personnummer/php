@@ -21,7 +21,7 @@ final class Personnummer
 
         for ($i = 0; $i < strlen($str); $i ++) {
             $v = intval($str[$i]);
-            $v *= 2 - ( $i % 2 );
+            $v *= 2 - ($i % 2);
 
             if ($v > 9) {
                 $v -= 9;
@@ -56,9 +56,9 @@ final class Personnummer
                 $day = '0' . $day;
             }
 
-            return !( substr($date->format('Y'), 2) !== strval($year) ||
-                      $date->format('m') !== strval($month) ||
-                      $date->format('d') !== strval($day) );
+            return !(substr($date->format('Y'), 2) !== strval($year) ||
+                     $date->format('m') !== strval($month) ||
+                     $date->format('d') !== strval($day));
         } catch (Exception $e) {
             return false;
         }
@@ -82,7 +82,7 @@ final class Personnummer
         $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\-|\+]{0,1})?(\d{3})(\d{0,1})$/';
         preg_match($reg, $str, $match);
 
-        if (!isset( $match ) || count($match) < 7) {
+        if (!isset($match) || count($match) < 7) {
             return false;
         }
 
@@ -104,6 +104,6 @@ final class Personnummer
             return $valid;
         }
 
-        return $valid && self::testDate($year, $month, ( intval($day) - 60 ));
+        return $valid && self::testDate($year, $month, (intval($day) - 60));
     }
 }
