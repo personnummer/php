@@ -16,12 +16,12 @@ final class Personnummer
      */
     private static function luhn($str)
     {
-        $v = 0;
+        $v   = 0;
         $sum = 0;
 
-        for ($i = 0; $i < strlen($str); $i++) {
+        for ($i = 0; $i < strlen($str); $i ++) {
             $v = intval($str[$i]);
-            $v *= 2 - ($i % 2);
+            $v *= 2 - ( $i % 2 );
 
             if ($v > 9) {
                 $v -= 9;
@@ -46,19 +46,19 @@ final class Personnummer
     {
         try {
             date_default_timezone_set('Europe/Stockholm');
-            $date = new DateTime($year.'-'.$month.'-'.$day);
+            $date = new DateTime($year . '-' . $month . '-' . $day);
 
             if (strlen($month) < 2) {
-                $month = '0'.$month;
+                $month = '0' . $month;
             }
 
             if (strlen($day) < 2) {
-                $day = '0'.$day;
+                $day = '0' . $day;
             }
 
-            return !(substr($date->format('Y'), 2) !== strval($year) ||
-              $date->format('m') !== strval($month) ||
-              $date->format('d') !== strval($day));
+            return !( substr($date->format('Y'), 2) !== strval($year) ||
+                      $date->format('m') !== strval($month) ||
+                      $date->format('d') !== strval($day) );
         } catch (Exception $e) {
             return false;
         }
@@ -82,28 +82,28 @@ final class Personnummer
         $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\-|\+]{0,1})?(\d{3})(\d{0,1})$/';
         preg_match($reg, $str, $match);
 
-        if (!isset($match) || count($match) < 7) {
+        if (!isset( $match ) || count($match) < 7) {
             return false;
         }
 
         $century = $match[1];
-        $year = $match[2];
-        $month = $match[3];
-        $day = $match[4];
-        $sep = $match[5];
-        $num = $match[6];
-        $check = $match[7];
+        $year    = $match[2];
+        $month   = $match[3];
+        $day     = $match[4];
+        $sep     = $match[5];
+        $num     = $match[6];
+        $check   = $match[7];
 
         if (strlen($year) === 4) {
             $year = substr($year, 2);
         }
 
-        $valid = self::luhn($year.$month.$day.$num) === intval($check);
+        $valid = self::luhn($year . $month . $day . $num) === intval($check);
 
         if ($valid && self::testDate($year, $month, $day)) {
             return $valid;
         }
 
-        return $valid && self::testDate($year, $month, (intval($day) - 60));
+        return $valid && self::testDate($year, $month, ( intval($day) - 60 ));
     }
 }
