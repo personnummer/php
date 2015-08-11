@@ -13,7 +13,9 @@
   "keywords": [
     "utility",
     "personnummer",
-    "identify"
+    "identify",
+    "security",
+    "swedish"
   ],
   "support": {
     "issues": "https://github.com/frozzare/php-personnummer/issues"
