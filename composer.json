@@ -13,9 +13,15 @@
   "keywords": [
     "utility",
     "personnummer",
+    "samordningsnummer",
     "identify",
     "security",
-    "swedish"
+    "swedish",
+    "social security number",
+    "personal identity number",
+    "personal id",
+    "co-ordination",
+    "coordination"
   ],
   "support": {
     "issues": "https://github.com/frozzare/php-personnummer/issues"
