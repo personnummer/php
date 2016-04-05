@@ -43,11 +43,11 @@ final class Personnummer
      * @return bool
      */
     private static function testDate($year, $month, $day)
-	{
-	    $timezone = date_default_timezone_get();
-	    $validDate = false;
+    {
+        $timezone = date_default_timezone_get();
+        $validDate = false;
 
-	    try {
+        try {
             date_default_timezone_set('Europe/Stockholm');
             $date = new DateTime($year . '-' . $month . '-' . $day);
 
@@ -60,11 +60,11 @@ final class Personnummer
             }
 
             $validDate = !(substr($date->format('Y'), 2) !== strval($year) ||
-                     $date->format('m') !== strval($month) ||
-					 $date->format('d') !== strval($day));
+                $date->format('m') !== strval($month) ||
+                $date->format('d') !== strval($day));
         } catch (Exception $e) {
             //pass
-		}
+        }
 
         date_default_timezone_set($timezone);
 
