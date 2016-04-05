@@ -44,10 +44,10 @@ final class Personnummer
      */
     private static function testDate($year, $month, $day)
 	{
-		$timezone = date_default_timezone_get();
-		$validDate = false;
+	    $timezone = date_default_timezone_get();
+	    $validDate = false;
 
-		try {
+	    try {
             date_default_timezone_set('Europe/Stockholm');
             $date = new DateTime($year . '-' . $month . '-' . $day);
 
@@ -66,9 +66,9 @@ final class Personnummer
             //pass
 		}
 
-		date_default_timezone_set($timezone);
+        date_default_timezone_set($timezone);
 
-		return $validDate;
+        return $validDate;
     }
 
     /**
