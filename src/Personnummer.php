@@ -63,7 +63,7 @@ final class Personnummer
                 $date->format('m') !== strval($month) ||
                 $date->format('d') !== strval($day));
         } catch (Exception $e) {
-            //pass
+            // Pass.
         }
 
         date_default_timezone_set($timezone);
