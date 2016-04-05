@@ -45,7 +45,8 @@ final class Personnummer
     private static function testDate($year, $month, $day)
 	{
 		$timezone = date_default_timezone_get();
-	
+		$validDate = false;
+
 		try {
             date_default_timezone_set('Europe/Stockholm');
             $date = new DateTime($year . '-' . $month . '-' . $day);
@@ -62,7 +63,7 @@ final class Personnummer
                      $date->format('m') !== strval($month) ||
 					 $date->format('d') !== strval($day));
         } catch (Exception $e) {
-            $validDate = false;
+            //pass
 		}
 
 		date_default_timezone_set($timezone);
