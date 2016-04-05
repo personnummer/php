@@ -57,4 +57,25 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(Personnummer::valid('900161-0017'));
         $this->assertFalse(Personnummer::valid('640893-3231'));
     }
+
+    public function testTimezone()
+    {
+        //Store the default timezone currently used.
+        $reset = date_default_timezone_get();
+
+        //Set a foreign timezone, in this case, New york.
+        date_default_timezone_set('America/New_York');
+
+        //This should pass, despite the foreign timezone.
+        $this->assertTrue(Personnummer::valid('701063-2391'));
+
+        //Get the timezone.
+        $timezone = date_default_timezone_get();
+
+        //We should still have the same timezone as the one we specified before.
+        $this->assertEquals('America/New_York', $timezone);
+
+        //Restore the original timezone so that we don't interfere with other tests.
+        date_default_timezone_set($reset);
+    }
 }
