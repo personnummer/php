@@ -1,6 +1,6 @@
 # php-personnummer [![Build Status](https://travis-ci.org/frozzare/php-personnummer.svg?branch=master)](https://travis-ci.org/frozzare/php-personnummer)
 
-Validate Swedish personal identity numbers.
+Validate Swedish social security numbers.
 
 ## Installation
 
@@ -22,6 +22,6 @@ Personnummer::valid('19130401+2931');
 
 See [PersonnummerTest.php](tests/PersonnummerTest.php) for more examples.
 
-# License
+## License
 
 MIT © [Fredrik Forsmo](https://github.com/frozzare)
