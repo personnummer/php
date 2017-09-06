@@ -1,4 +1,4 @@
-# php-personnummer [![Build Status](https://travis-ci.org/frozzare/php-personnummer.svg?branch=master)](https://travis-ci.org/frozzare/php-personnummer)
+# personnummer [![Build Status](https://travis-ci.org/frozzare/php-personnummer.svg?branch=master)](https://travis-ci.org/frozzare/php-personnummer)
 
 Validate Swedish social security numbers.
 
