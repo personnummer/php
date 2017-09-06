@@ -72,7 +72,7 @@ final class Personnummer
     }
 
     /**
-     * Validate Swedish personal identify numbers.
+     * Validate Swedish social security numbers.
      *
      * @param string|int $str
      *
