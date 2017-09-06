@@ -2,7 +2,7 @@
   "name": "frozzare/personnummer",
   "type": "utility",
   "license": "MIT",
-  "description": "Validate Swedish personal identify numbers",
+  "description": "Validate Swedish social security numbers",
   "authors": [
     {
       "name": "Fredrik Forsmo",
