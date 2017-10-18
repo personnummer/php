@@ -24,4 +24,4 @@ See [PersonnummerTest.php](tests/PersonnummerTest.php) for more examples.
 
 ## License
 
-MIT © [Fredrik Forsmo](https://github.com/frozzare)
+MIT
