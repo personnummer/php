@@ -60,24 +60,23 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(Personnummer::valid('640893-3231'));
     }
 
-    public function testTimezone()
+    public function testFormat()
     {
-        // Store the default timezone currently used.
-        $reset = date_default_timezone_get();
+        $this->assertEquals('640327-3813', Personnummer::format(6403273813));
+        $this->assertEquals('510818-9167', Personnummer::format('510818-9167'));
+        $this->assertEquals('900101-0017', Personnummer::format('19900101-0017'));
+        $this->assertEquals('130401+2931', Personnummer::format('19130401+2931'));
+        $this->assertEquals('640823-3234', Personnummer::format('196408233234'));
+        $this->assertEquals('000101-0107', Personnummer::format('0001010107'));
+        $this->assertEquals('000101-0107', Personnummer::format('000101-0107'));
 
-        // Set a foreign timezone, in this case, New york.
-        date_default_timezone_set('America/New_York');
-
-        // This should pass, despite the foreign timezone.
-        $this->assertTrue(Personnummer::valid('701063-2391'));
-
-        // Get the timezone.
-        $timezone = date_default_timezone_get();
-
-        // We should still have the same timezone as the one we specified before.
-        $this->assertEquals('America/New_York', $timezone);
-
-        // Restore the original timezone so that we don't interfere with other tests.
-        date_default_timezone_set($reset);
+        $this->assertEquals('196403273813', Personnummer::format(6403273813, true));
+        $this->assertEquals('195108189167', Personnummer::format('510818-9167', true));
+        $this->assertEquals('199001010017', Personnummer::format('19900101-0017', true));
+        $this->assertEquals('191304012931', Personnummer::format('19130401+2931', true));
+        $this->assertEquals('196408233234', Personnummer::format('196408233234', true));
+        $this->assertEquals('200001010107', Personnummer::format('0001010107', true));
+        $this->assertEquals('200001010107', Personnummer::format('000101-0107', true));
+        $this->assertEquals('190001010107', Personnummer::format('000101+0107', true));
     }
 }

@@ -2,9 +2,6 @@
 
 namespace Frozzare\Personnummer;
 
-use Datetime;
-use Exception;
-
 final class Personnummer
 {
     /**
@@ -34,41 +31,50 @@ final class Personnummer
     }
 
     /**
-     * Test date if luhn is true.
+     * Parse Swedish social security numbers and get the parts
      *
-     * @param string|int $year
-     * @param string|int $month
-     * @param string|int $day
+     * @param string $str
      *
-     * @return bool
+     * @return array
      */
-    private static function testDate($year, $month, $day)
-    {
-        $timezone = date_default_timezone_get();
-        $validDate = false;
+    protected static function getParts($str) {
+        $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\+\-\s]?)(\d{3})(\d)$/';
+        preg_match($reg, $str, $match);
 
-        try {
-            date_default_timezone_set('Europe/Stockholm');
-            $date = new DateTime($year . '-' . $month . '-' . $day);
-
-            if (strlen($month) < 2) {
-                $month = '0' . $month;
-            }
-
-            if (strlen($day) < 2) {
-                $day = '0' . $day;
-            }
-
-            $validDate = !(substr($date->format('Y'), 2) !== strval($year) ||
-                $date->format('m') !== strval($month) ||
-                $date->format('d') !== strval($day));
-        } catch (Exception $e) {
-            // Pass.
+        if (!isset($match) || count($match) !== 8) {
+            return array();
         }
 
-        date_default_timezone_set($timezone);
+        $century = $match[1];
+        $year    = $match[2];
+        $month   = $match[3];
+        $day     = $match[4];
+        $sep     = $match[5];
+        $num     = $match[6];
+        $check   = $match[7];
 
-        return $validDate;
+        if (!in_array($sep, array('-', '+'))) {
+            $sep = '-';
+        }
+
+        if (empty($century)) {
+            if ($sep === '+') {
+                $baseYear = date('Y', strtotime('-200 years'));
+            } else {
+                $baseYear = date('Y', strtotime('-100 years'));
+            }
+            $century = substr((100 + $baseYear + ($year - $baseYear) % 100), 0, 2);
+        }
+
+        return array(
+            'century' => $century,
+            'year' => $year,
+            'month' => $month,
+            'day' => $day,
+            'sep' => $sep,
+            'num' => $num,
+            'check' => $check
+        );
     }
 
     /**
@@ -86,31 +92,58 @@ final class Personnummer
 
         $str = strval($str);
 
-        $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\-|\+]{0,1})?(\d{3})(\d{0,1})$/';
-        preg_match($reg, $str, $match);
+        $parts = array_pad(self::getParts($str), 7, '');
 
-        if (!isset($match) || count($match) < 7) {
+        if (in_array('', $parts, true)) {
             return false;
         }
 
-        $century = $match[1];
-        $year    = $match[2];
-        $month   = $match[3];
-        $day     = $match[4];
-        $sep     = $match[5];
-        $num     = $match[6];
-        $check   = $match[7];
+        list($century, $year, $month, $day, $sep, $num, $check) = array_values($parts);
 
-        if (strlen($year) === 4) {
-            $year = substr($year, 2);
+        $validDate = checkdate($month, $day, strval($century) . strval($year));
+        $validCoOrdinationNumber = checkdate($month, intval($day) - 60, strval($century) . strval($year));
+
+        if (!$validDate && !$validCoOrdinationNumber) {
+            return false;
         }
 
         $valid = self::luhn($year . $month . $day . $num) === intval($check);
 
-        if ($valid && self::testDate($year, $month, $day)) {
-            return $valid;
+        return $valid;
+    }
+
+    /**
+     * Format Swedish social security numbers to official format
+     *
+     * @param string|int $str
+     * @param bool $longFormat YYMMDD-XXXX or YYYYMMDDXXXX since the tax office says both are official
+     *
+     * @return string
+     */
+    public static function format($str, $longFormat = false) {
+        if (!self::valid($str)) {
+            return '';
         }
 
-        return $valid && self::testDate($year, $month, (intval($day) - 60));
+        $parts = self::getParts($str);
+
+        if ($longFormat) {
+            $format = '%1$s%2$s%3$s%4$s%6$s%7$s';
+        } else {
+            $format = '%2$s%3$s%4$s%5$s%6$s%7$s';
+        }
+
+        $return = sprintf(
+            $format,
+            $parts['century'],
+            $parts['year'],
+            $parts['month'],
+            $parts['day'],
+            $parts['sep'],
+            $parts['num'],
+            $parts['check']
+        );
+
+        return $return;
     }
 }
