@@ -54,7 +54,11 @@ final class Personnummer
         $check   = $match[7];
 
         if (!in_array($sep, array('-', '+'))) {
-            $sep = '-';
+            if (empty($century) || date('Y') - intval(strval($century) . strval($year)) < 100) {
+                $sep = '-';
+            } else {
+                $sep = '+';
+            }
         }
 
         if (empty($century)) {
