@@ -31,7 +31,7 @@ Personnummer::format(6403273813);
 //=> 640327-3813
 
 // Long format (YYYYMMDDXXXX)
-Personnummer::valid('6403273813', true);
+Personnummer::format('6403273813', true);
 //=> 196403273813
 ```
 
