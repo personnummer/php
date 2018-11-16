@@ -63,11 +63,11 @@ final class Personnummer
 
         if (empty($century)) {
             if ($sep === '+') {
-                $baseYear = date('Y', strtotime('-200 years'));
-            } else {
                 $baseYear = date('Y', strtotime('-100 years'));
+            } else {
+                $baseYear = date('Y');
             }
-            $century = substr((100 + $baseYear + ($year - $baseYear) % 100), 0, 2);
+            $century = substr(($baseYear - (($baseYear - $year) % 100)), 0, 2);
         }
 
         return array(
