@@ -7,7 +7,7 @@ final class Personnummer
     /**
      * The Luhn algorithm.
      *
-     * @param string str
+     * @param  string str
      *
      * @return int
      */
@@ -33,7 +33,7 @@ final class Personnummer
     /**
      * Parse Swedish social security numbers and get the parts
      *
-     * @param string $str
+     * @param  string $str
      *
      * @return array
      */
@@ -84,11 +84,12 @@ final class Personnummer
     /**
      * Validate Swedish social security numbers.
      *
-     * @param string|int $str
+     * @param  string|int $str
+     * @param  bool $includeCoordinationNumber
      *
      * @return bool
      */
-    public static function valid($str)
+    public static function valid($str, $includeCoordinationNumber = true)
     {
         if (!is_numeric($str) && !is_string($str)) {
             return false;
@@ -105,7 +106,7 @@ final class Personnummer
         list($century, $year, $month, $day, $sep, $num, $check) = array_values($parts);
 
         $validDate = checkdate($month, $day, strval($century) . strval($year));
-        $validCoOrdinationNumber = checkdate($month, intval($day) - 60, strval($century) . strval($year));
+        $validCoOrdinationNumber = $includeCoordinationNumber ? checkdate($month, intval($day) - 60, strval($century) . strval($year)) : false;
 
         if (!$validDate && !$validCoOrdinationNumber) {
             return false;
@@ -119,8 +120,8 @@ final class Personnummer
     /**
      * Format Swedish social security numbers to official format
      *
-     * @param string|int $str
-     * @param bool $longFormat YYMMDD-XXXX or YYYYMMDDXXXX since the tax office says both are official
+     * @param  string|int $str
+     * @param  bool $longFormat YYMMDD-XXXX or YYYYMMDDXXXX since the tax office says both are official
      *
      * @return string
      */

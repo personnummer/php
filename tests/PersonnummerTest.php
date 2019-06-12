@@ -54,6 +54,12 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(Personnummer::valid('640883-3231'));
     }
 
+    public function testExcludeOfCoOrdinationNumbers()
+    {
+        $this->assertFalse(Personnummer::valid('701063-2391', false));
+        $this->assertFalse(Personnummer::valid('640883-3231', false));
+    }
+
     public function testWrongCoOrdinationNumbers()
     {
         $this->assertFalse(Personnummer::valid('900161-0017'));
