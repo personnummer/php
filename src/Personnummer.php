@@ -2,6 +2,8 @@
 
 namespace Frozzare\Personnummer;
 
+use DateTime;
+
 final class Personnummer
 {
     /**
@@ -37,7 +39,8 @@ final class Personnummer
      *
      * @return array
      */
-    protected static function getParts($str) {
+    protected static function getParts($str)
+    {
         $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\+\-\s]?)(\d{3})(\d)$/';
         preg_match($reg, $str, $match);
 
@@ -106,7 +109,8 @@ final class Personnummer
         list($century, $year, $month, $day, $sep, $num, $check) = array_values($parts);
 
         $validDate = checkdate($month, $day, strval($century) . strval($year));
-        $validCoOrdinationNumber = $includeCoordinationNumber ? checkdate($month, intval($day) - 60, strval($century) . strval($year)) : false;
+        $validCoOrdinationNumber = $includeCoordinationNumber ?
+            checkdate($month, intval($day) - 60, strval($century) . strval($year)) : false;
 
         if (!$validDate && !$validCoOrdinationNumber) {
             return false;
@@ -125,7 +129,8 @@ final class Personnummer
      *
      * @return string
      */
-    public static function format($str, $longFormat = false) {
+    public static function format($str, $longFormat = false)
+    {
         if (!self::valid($str)) {
             return '';
         }
@@ -150,5 +155,31 @@ final class Personnummer
         );
 
         return $return;
+    }
+
+    /**
+     * Get age from a personnummer.
+     *
+     * @param  string|int $str
+     * @param  bool $includeCoordinationNumber
+     *
+     * @return int
+     */
+    public static function getAge($str, $includeCoordinationNumber = true)
+    {
+        if (!self::valid($str, $includeCoordinationNumber)) {
+            return 0;
+        }
+
+        $parts = self::getParts($str);
+
+        $day = intval($parts['day']);
+        if ($includeCoordinationNumber && $day >= 61 && $day <= 91) {
+            $day -= 60;
+        }
+
+        $d2 = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
+
+        return (new DateTime)->diff($d2)->y;
     }
 }

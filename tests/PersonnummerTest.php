@@ -86,4 +86,24 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('200001010107', Personnummer::format('000101-0107', true));
         $this->assertEquals('190001010107', Personnummer::format('000101+0107', true));
     }
+
+    public function testAge()
+    {
+        $this->assertSame(55, Personnummer::getAge(6403273813));
+        $this->assertSame(67, Personnummer::getAge('510818-9167'));
+        $this->assertSame(29, Personnummer::getAge('19900101-0017'));
+        $this->assertSame(106, Personnummer::getAge('19130401+2931'));
+    }
+
+    public function testAgeWithCoOrdinationNumbers()
+    {
+        $this->assertSame(48, Personnummer::getAge('701063-2391'));
+        $this->assertSame(54, Personnummer::getAge('640883-3231'));
+    }
+
+    public function testExcludeOfCoOrdinationNumbersAge()
+    {
+        $this->assertSame(0, Personnummer::getAge('701063-2391', false));
+        $this->assertSame(0, Personnummer::getAge('640883-3231', false));
+    }
 }
