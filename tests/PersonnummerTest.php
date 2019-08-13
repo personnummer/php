@@ -17,6 +17,7 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(Personnummer::valid('196408233234'));
         $this->assertTrue(Personnummer::valid('0001010107'));
         $this->assertTrue(Personnummer::valid('000101-0107'));
+        $this->assertTrue(Personnummer::valid('101010-1010'));
     }
 
     public function testPersonnummerWithoutControlDigit()
