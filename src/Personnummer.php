@@ -33,16 +33,16 @@ final class Personnummer
     }
 
     /**
-     * Parse Swedish social security numbers and get the parts
+     * Parse a Swedish social security number and get the parts.
      *
-     * @param  string $str
+     * @param  string $ssn
      *
      * @return array
      */
-    protected static function getParts($str)
+    protected static function getParts($ssn)
     {
         $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\+\-\s]?)(\d{3})(\d)$/';
-        preg_match($reg, $str, $match);
+        preg_match($reg, $ssn, $match);
 
         if (!isset($match) || count($match) !== 8) {
             return array();
@@ -85,22 +85,21 @@ final class Personnummer
     }
 
     /**
-     * Validate Swedish social security numbers.
+     * Validate a Swedish social security number.
      *
-     * @param  string|int $str
+     * @param  string|int $ssn
      * @param  bool $includeCoordinationNumber
      *
      * @return bool
      */
-    public static function valid($str, $includeCoordinationNumber = true)
+    public static function valid($ssn, $includeCoordinationNumber = true)
     {
-        if (!is_numeric($str) && !is_string($str)) {
+        if (!is_numeric($ssn) && !is_string($ssn)) {
             return false;
         }
 
-        $str = strval($str);
-
-        $parts = array_pad(self::getParts($str), 7, '');
+        $ssn = strval($ssn);
+        $parts = array_pad(self::getParts($ssn), 7, '');
 
         if (in_array('', $parts, true)) {
             return false;
@@ -122,20 +121,23 @@ final class Personnummer
     }
 
     /**
-     * Format Swedish social security numbers to official format
+     * Format a Swedish social security number as one of the official formats,
+     * A long format or a short format.
+     *
+     * If the input number could not be parsed a empty string will be returned.
      *
      * @param  string|int $str
      * @param  bool $longFormat YYMMDD-XXXX or YYYYMMDDXXXX since the tax office says both are official
      *
      * @return string
      */
-    public static function format($str, $longFormat = false)
+    public static function format($ssn, $longFormat = false)
     {
-        if (!self::valid($str)) {
+        if (!self::valid($ssn)) {
             return '';
         }
 
-        $parts = self::getParts($str);
+        $parts = self::getParts($ssn);
 
         if ($longFormat) {
             $format = '%1$s%2$s%3$s%4$s%6$s%7$s';
@@ -158,28 +160,30 @@ final class Personnummer
     }
 
     /**
-     * Get age from a personnummer.
+     * Get age from a Swedish social security number.
      *
-     * @param  string|int $str
+     * @param  string|int $ssn
      * @param  bool $includeCoordinationNumber
      *
      * @return int
      */
-    public static function getAge($str, $includeCoordinationNumber = true)
+    public static function getAge($ssn, $includeCoordinationNumber = true)
     {
-        if (!self::valid($str, $includeCoordinationNumber)) {
+        if (!self::valid($ssn, $includeCoordinationNumber)) {
             return 0;
         }
 
-        $parts = self::getParts($str);
+        $parts = self::getParts($ssn);
 
         $day = intval($parts['day']);
         if ($includeCoordinationNumber && $day >= 61 && $day <= 91) {
             $day -= 60;
         }
 
+        $ts = time();
+        $d1 = new DateTime("@$ts");
         $d2 = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
 
-        return (new DateTime)->diff($d2)->y;
+        return $d1->diff($d2)->y;
     }
 }

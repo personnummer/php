@@ -1,8 +1,10 @@
 <?php
 
-namespace Frozzare\Tests\Personnummer;
+namespace Frozzare\Personnummer;
 
-use Frozzare\Personnummer\Personnummer;
+function time() {
+    return 1565704890;
+}
 
 class PersonnummerTest extends \PHPUnit_Framework_TestCase
 {
@@ -93,6 +95,7 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(67, Personnummer::getAge('510818-9167'));
         $this->assertSame(29, Personnummer::getAge('19900101-0017'));
         $this->assertSame(106, Personnummer::getAge('19130401+2931'));
+        $this->assertSame(19, Personnummer::getAge('200002296127'));
     }
 
     public function testAgeWithCoOrdinationNumbers()
