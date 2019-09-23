@@ -2,12 +2,39 @@
 
 namespace Frozzare\Personnummer;
 
+use PHPUnit_Framework_TestCase;
+use VladaHejda\AssertException;
+
 function time() {
     return 1565704890;
 }
 
-class PersonnummerTest extends \PHPUnit_Framework_TestCase
+class PersonnummerTest extends PHPUnit_Framework_TestCase
 {
+    use AssertException;
+
+    protected $invalidNumbers = [
+        null,
+        [],
+        true,
+        false,
+        100101001,
+        '112233-4455',
+        '19112233-4455',
+        '9999999999',
+        '199999999999',
+        '9913131315',
+        '9911311232',
+        '9902291237',
+        '19990919_3766',
+        '990919_3766',
+        '199909193776',
+        'Just a string',
+        '990919+3776',
+        '990919-3776',
+        '9909193776',
+    ];
+
     public function testPersonnummerWithControlDigit()
     {
         $this->assertTrue(Personnummer::valid(6403273813));
@@ -30,25 +57,9 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
 
     public function testPersonnummerWithWrongTypes()
     {
-        $this->assertFalse(Personnummer::valid(null));
-        $this->assertFalse(Personnummer::valid(array()));
-        $this->assertFalse(Personnummer::valid(true));
-        $this->assertFalse(Personnummer::valid(false));
-        $this->assertFalse(Personnummer::valid(100101001));
-        $this->assertFalse(Personnummer::valid('112233-4455'));
-        $this->assertFalse(Personnummer::valid('19112233-4455'));
-        $this->assertFalse(Personnummer::valid('9999999999'));
-        $this->assertFalse(Personnummer::valid('199999999999'));
-        $this->assertFalse(Personnummer::valid('9913131315'));
-        $this->assertFalse(Personnummer::valid('9911311232'));
-        $this->assertFalse(Personnummer::valid('9902291237'));
-        $this->assertFalse(Personnummer::valid('19990919_3766'));
-        $this->assertFalse(Personnummer::valid('990919_3766'));
-        $this->assertFalse(Personnummer::valid('199909193776'));
-        $this->assertFalse(Personnummer::valid('Just a string'));
-        $this->assertFalse(Personnummer::valid('990919+3776'));
-        $this->assertFalse(Personnummer::valid('990919-3776'));
-        $this->assertFalse(Personnummer::valid('9909193776'));
+        foreach ($this->invalidNumbers as $invalidNumber) {
+            $this->assertFalse(Personnummer::valid($invalidNumber));
+        }
     }
 
     public function testCoOrdinationNumbers()
@@ -90,6 +101,15 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('190001010107', Personnummer::format('000101+0107', true));
     }
 
+    public function testFormatWithInvalidNumbers()
+    {
+        foreach ($this->invalidNumbers as $invalidNumber) {
+            $this->assertException(function () use ($invalidNumber) {
+                Personnummer::format($invalidNumber);
+            }, PersonnummerException::class);
+        }
+    }
+
     public function testAge()
     {
         $this->assertSame(55, Personnummer::getAge(6403273813));
@@ -105,9 +125,22 @@ class PersonnummerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(54, Personnummer::getAge('640883-3231'));
     }
 
+    public function testAgeWithInvalidNumbers()
+    {
+        foreach ($this->invalidNumbers as $invalidNumber) {
+            $this->assertException(function () use ($invalidNumber) {
+                Personnummer::getAge($invalidNumber);
+            }, PersonnummerException::class);
+        }
+    }
+
     public function testExcludeOfCoOrdinationNumbersAge()
     {
-        $this->assertSame(0, Personnummer::getAge('701063-2391', false));
-        $this->assertSame(0, Personnummer::getAge('640883-3231', false));
+        $this->assertException(function () {
+            Personnummer::getAge('701063-2391', false);
+        }, PersonnummerException::class);
+        $this->assertException(function () {
+            Personnummer::getAge('640883-3231', false);
+        }, PersonnummerException::class);
     }
 }
