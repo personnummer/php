@@ -124,6 +124,41 @@ final class Personnummer
     }
 
     /**
+     * Check if a Swedish social security number is for a male.
+     *
+     * @param string|int $ssn
+     * @param bool       $includeCoordinationNumber
+     *
+     * @return bool
+     * @throws PersonnummerException
+     */
+    public static function isMale($ssn, $includeCoordinationNumber = true)
+    {
+        if (!self::valid($ssn, $includeCoordinationNumber)) {
+            throw new PersonnummerException();
+        }
+
+        $parts       = self::getParts($ssn);
+        $genderDigit = substr($parts['num'], -1);
+
+        return boolval($genderDigit % 2);
+    }
+
+    /**
+     * Check if a Swedish social security number is for a female.
+     *
+     * @param string|int $ssn
+     * @param bool       $includeCoordinationNumber
+     *
+     * @return bool
+     * @throws PersonnummerException
+     */
+    public static function isFemale($ssn, $includeCoordinationNumber = true)
+    {
+        return !static::isMale($ssn, $includeCoordinationNumber);
+    }
+
+    /**
      * Parse a Swedish social security number and get the parts.
      *
      * @param string $ssn
