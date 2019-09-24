@@ -3,92 +3,15 @@
 namespace Frozzare\Personnummer;
 
 use DateTime;
+use Exception;
 
 final class Personnummer
 {
     /**
-     * The Luhn algorithm.
-     *
-     * @param  string str
-     *
-     * @return int
-     */
-    private static function luhn($str)
-    {
-        $v   = 0;
-        $sum = 0;
-
-        for ($i = 0; $i < strlen($str); $i ++) {
-            $v = intval($str[$i]);
-            $v *= 2 - ($i % 2);
-
-            if ($v > 9) {
-                $v -= 9;
-            }
-
-            $sum += $v;
-        }
-
-        return intval(ceil($sum / 10) * 10 - $sum);
-    }
-
-    /**
-     * Parse a Swedish social security number and get the parts.
-     *
-     * @param  string $ssn
-     *
-     * @return array
-     */
-    protected static function getParts($ssn)
-    {
-        $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\+\-\s]?)(\d{3})(\d)$/';
-        preg_match($reg, $ssn, $match);
-
-        if (!isset($match) || count($match) !== 8) {
-            return array();
-        }
-
-        $century = $match[1];
-        $year    = $match[2];
-        $month   = $match[3];
-        $day     = $match[4];
-        $sep     = $match[5];
-        $num     = $match[6];
-        $check   = $match[7];
-
-        if (!in_array($sep, array('-', '+'))) {
-            if (empty($century) || date('Y') - intval(strval($century) . strval($year)) < 100) {
-                $sep = '-';
-            } else {
-                $sep = '+';
-            }
-        }
-
-        if (empty($century)) {
-            if ($sep === '+') {
-                $baseYear = date('Y', strtotime('-100 years'));
-            } else {
-                $baseYear = date('Y');
-            }
-            $century = substr(($baseYear - (($baseYear - $year) % 100)), 0, 2);
-        }
-
-        return array(
-            'century' => $century,
-            'year' => $year,
-            'month' => $month,
-            'day' => $day,
-            'sep' => $sep,
-            'num' => $num,
-            'check' => $check
-        );
-    }
-
-    /**
      * Validate a Swedish social security number.
      *
-     * @param  string|int $ssn
-     * @param  bool $includeCoordinationNumber
+     * @param string|int $ssn
+     * @param bool       $includeCoordinationNumber
      *
      * @return bool
      */
@@ -99,7 +22,13 @@ final class Personnummer
         }
 
         $ssn = strval($ssn);
-        $parts = array_pad(self::getParts($ssn), 7, '');
+        try {
+            $parts = self::getParts($ssn);
+        } catch (PersonnummerException $exception) {
+            return false;
+        }
+
+        $parts = array_pad($parts, 7, '');
 
         if (in_array('', $parts, true)) {
             return false;
@@ -107,7 +36,7 @@ final class Personnummer
 
         list($century, $year, $month, $day, $sep, $num, $check) = array_values($parts);
 
-        $validDate = checkdate($month, $day, strval($century) . strval($year));
+        $validDate               = checkdate($month, $day, strval($century) . strval($year));
         $validCoOrdinationNumber = $includeCoordinationNumber ?
             checkdate($month, intval($day) - 60, strval($century) . strval($year)) : false;
 
@@ -126,15 +55,16 @@ final class Personnummer
      *
      * If the input number could not be parsed a empty string will be returned.
      *
-     * @param  string|int $str
-     * @param  bool $longFormat YYMMDD-XXXX or YYYYMMDDXXXX since the tax office says both are official
+     * @param string|int $ssn
+     * @param bool       $longFormat YYMMDD-XXXX or YYYYMMDDXXXX since the tax office says both are official
      *
      * @return string
+     * @throws PersonnummerException
      */
     public static function format($ssn, $longFormat = false)
     {
         if (!self::valid($ssn)) {
-            return '';
+            throw new PersonnummerException();
         }
 
         $parts = self::getParts($ssn);
@@ -162,15 +92,16 @@ final class Personnummer
     /**
      * Get age from a Swedish social security number.
      *
-     * @param  string|int $ssn
-     * @param  bool $includeCoordinationNumber
+     * @param string|int $ssn
+     * @param bool       $includeCoordinationNumber
      *
      * @return int
+     * @throws PersonnummerException
      */
     public static function getAge($ssn, $includeCoordinationNumber = true)
     {
         if (!self::valid($ssn, $includeCoordinationNumber)) {
-            return 0;
+            throw new PersonnummerException();
         }
 
         $parts = self::getParts($ssn);
@@ -182,8 +113,91 @@ final class Personnummer
 
         $ts = time();
         $d1 = new DateTime("@$ts");
-        $d2 = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
+
+        try {
+            $d2 = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
+        } catch (Exception $e) {
+            throw new PersonnummerException();
+        }
 
         return $d1->diff($d2)->y;
+    }
+
+    /**
+     * Parse a Swedish social security number and get the parts.
+     *
+     * @param string $ssn
+     *
+     * @return array
+     * @throws PersonnummerException
+     */
+    protected static function getParts($ssn)
+    {
+        $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\+\-\s]?)(\d{3})(\d)$/';
+        preg_match($reg, $ssn, $match);
+
+        if (!isset($match) || count($match) !== 8) {
+            throw new PersonnummerException();
+        }
+
+        $century = $match[1];
+        $year    = $match[2];
+        $month   = $match[3];
+        $day     = $match[4];
+        $sep     = $match[5];
+        $num     = $match[6];
+        $check   = $match[7];
+
+        if (!in_array($sep, ['-', '+'])) {
+            if (empty($century) || date('Y') - intval(strval($century) . strval($year)) < 100) {
+                $sep = '-';
+            } else {
+                $sep = '+';
+            }
+        }
+
+        if (empty($century)) {
+            if ($sep === '+') {
+                $baseYear = date('Y', strtotime('-100 years'));
+            } else {
+                $baseYear = date('Y');
+            }
+            $century = substr(($baseYear - (($baseYear - $year) % 100)), 0, 2);
+        }
+
+        return [
+            'century' => $century,
+            'year'    => $year,
+            'month'   => $month,
+            'day'     => $day,
+            'sep'     => $sep,
+            'num'     => $num,
+            'check'   => $check,
+        ];
+    }
+
+    /**
+     * The Luhn algorithm.
+     *
+     * @param string str
+     *
+     * @return int
+     */
+    private static function luhn($str)
+    {
+        $sum = 0;
+
+        for ($i = 0; $i < strlen($str); $i++) {
+            $v = intval($str[$i]);
+            $v *= 2 - ($i % 2);
+
+            if ($v > 9) {
+                $v -= 9;
+            }
+
+            $sum += $v;
+        }
+
+        return intval(ceil($sum / 10) * 10 - $sum);
     }
 }
