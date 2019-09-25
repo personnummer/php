@@ -5,7 +5,8 @@ namespace Frozzare\Personnummer;
 use PHPUnit_Framework_TestCase;
 use VladaHejda\AssertException;
 
-function time() {
+function time()
+{
     return 1565704890;
 }
 
@@ -142,5 +143,33 @@ class PersonnummerTest extends PHPUnit_Framework_TestCase
         $this->assertException(function () {
             Personnummer::getAge('640883-3231', false);
         }, PersonnummerException::class);
+    }
+
+    public function testSex()
+    {
+        $this->assertTrue(Personnummer::isMale(6403273813, false));
+        $this->assertFalse(Personnummer::isFemale(6403273813, false));
+        $this->assertTrue(Personnummer::isFemale('510818-9167', false));
+        $this->assertFalse(Personnummer::isMale('510818-9167', false));
+    }
+
+    public function testSexWithCoOrdinationNumbers()
+    {
+        $this->assertTrue(Personnummer::isMale('701063-2391'));
+        $this->assertFalse(Personnummer::isFemale('701063-2391'));
+        $this->assertTrue(Personnummer::isFemale('640883-3223'));
+        $this->assertFalse(Personnummer::isMale('640883-3223'));
+    }
+
+    public function testSexWithInvalidNumbers()
+    {
+        foreach ($this->invalidNumbers as $invalidNumber) {
+            $this->assertException(function () use ($invalidNumber) {
+                Personnummer::isMale($invalidNumber);
+            }, PersonnummerException::class);
+            $this->assertException(function () use ($invalidNumber) {
+                Personnummer::isFemale($invalidNumber);
+            }, PersonnummerException::class);
+        }
     }
 }
