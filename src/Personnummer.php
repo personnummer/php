@@ -101,7 +101,7 @@ final class Personnummer
     public static function getAge($ssn, $includeCoordinationNumber = true)
     {
         if (!self::valid($ssn, $includeCoordinationNumber)) {
-            return;
+            return 0;
         }
 
         $parts = self::getParts($ssn);
@@ -117,7 +117,7 @@ final class Personnummer
         try {
             $d2 = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
         } catch (Exception $e) {
-            return;
+            return 0;
         }
 
         return $d1->diff($d2)->y;
