@@ -105,9 +105,7 @@ class PersonnummerTest extends PHPUnit_Framework_TestCase
     public function testFormatWithInvalidNumbers()
     {
         foreach ($this->invalidNumbers as $invalidNumber) {
-            $this->assertException(function () use ($invalidNumber) {
-                Personnummer::format($invalidNumber);
-            }, PersonnummerException::class);
+            $this->assertFalse(Personnummer::format($invalidNumber));
         }
     }
 
@@ -129,20 +127,14 @@ class PersonnummerTest extends PHPUnit_Framework_TestCase
     public function testAgeWithInvalidNumbers()
     {
         foreach ($this->invalidNumbers as $invalidNumber) {
-            $this->assertException(function () use ($invalidNumber) {
-                Personnummer::getAge($invalidNumber);
-            }, PersonnummerException::class);
+            $this->assertEmpty(Personnummer::getAge($invalidNumber));
         }
     }
 
     public function testExcludeOfCoOrdinationNumbersAge()
     {
-        $this->assertException(function () {
-            Personnummer::getAge('701063-2391', false);
-        }, PersonnummerException::class);
-        $this->assertException(function () {
-            Personnummer::getAge('640883-3231', false);
-        }, PersonnummerException::class);
+        $this->assertEmpty(Personnummer::getAge('701063-2391', false));
+        $this->assertEmpty(Personnummer::getAge('640883-3231', false));
     }
 
     public function testSex()
