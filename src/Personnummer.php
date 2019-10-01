@@ -8,10 +8,10 @@ use Exception;
 final class Personnummer
 {
     /**
-     * Validate a Swedish social security number.
+     * Validate a Swedish social security/coordination number.
      *
-     * @param string|int $ssn
-     * @param bool       $includeCoordinationNumber
+     * @param string|int $ssn                       Social security number to validate.
+     * @param bool       $includeCoordinationNumber If to include Coordination numbers as valid numbers.
      *
      * @return bool
      */
@@ -50,16 +50,16 @@ final class Personnummer
     }
 
     /**
-     * Format a Swedish social security number as one of the official formats,
+     * Format a Swedish social security/coordination number as one of the official formats,
      * A long format or a short format.
      *
-     * If the input number could not be parsed a empty string will be returned.
+     * If the input number could not be parsed an empty string will be returned.
      *
-     * @param string|int $ssn
+     * @param string|int $ssn        Social Security or Coordination number to format.
      * @param bool       $longFormat YYMMDD-XXXX or YYYYMMDDXXXX since the tax office says both are official
      *
      * @return string
-     * @throws PersonnummerException
+     * @throws PersonnummerException On parse failure.
      */
     public static function format($ssn, $longFormat = false)
     {
@@ -90,13 +90,13 @@ final class Personnummer
     }
 
     /**
-     * Get age from a Swedish social security number.
+     * Get age from a Swedish social security/coordination number.
      *
-     * @param string|int $ssn
-     * @param bool       $includeCoordinationNumber
+     * @param string|int $ssn                       Social security/coordination number to get age from.
+     * @param bool       $includeCoordinationNumber If to include coordination numbers in
      *
      * @return int
-     * @throws PersonnummerException
+     * @throws PersonnummerException On parse failure.
      */
     public static function getAge($ssn, $includeCoordinationNumber = true)
     {
@@ -126,11 +126,11 @@ final class Personnummer
     /**
      * Check if a Swedish social security number is for a male.
      *
-     * @param string|int $ssn
-     * @param bool       $includeCoordinationNumber
+     * @param string|int $ssn                       Social security number to test.
+     * @param bool       $includeCoordinationNumber If to include Coordination numbers as valid numbers.
      *
      * @return bool
-     * @throws PersonnummerException
+     * @throws PersonnummerException On parse failure.
      */
     public static function isMale($ssn, $includeCoordinationNumber = true)
     {
@@ -147,11 +147,11 @@ final class Personnummer
     /**
      * Check if a Swedish social security number is for a female.
      *
-     * @param string|int $ssn
-     * @param bool       $includeCoordinationNumber
+     * @param string|int $ssn                       Social security number to test.
+     * @param bool       $includeCoordinationNumber If to include Coordination numbers as valid numbers.
      *
      * @return bool
-     * @throws PersonnummerException
+     * @throws PersonnummerException On parse failure.
      */
     public static function isFemale($ssn, $includeCoordinationNumber = true)
     {
@@ -161,10 +161,10 @@ final class Personnummer
     /**
      * Parse a Swedish social security number and get the parts.
      *
-     * @param string $ssn
+     * @param string $ssn Social security number to get parts from.
      *
      * @return array
-     * @throws PersonnummerException
+     * @throws PersonnummerException On parse failure.
      */
     protected static function getParts($ssn)
     {
@@ -214,7 +214,7 @@ final class Personnummer
     /**
      * The Luhn algorithm.
      *
-     * @param string str
+     * @param string $str String to run the Luhn algorithm on.
      *
      * @return int
      */
