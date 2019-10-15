@@ -1,5 +1,5 @@
 {
-  "name": "frozzare/personnummer",
+  "name": "personnummer/personnummer",
   "type": "utility",
   "license": "MIT",
   "description": "Validate Swedish social security numbers",
