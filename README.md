@@ -5,7 +5,7 @@ Validate Swedish social security numbers.
 ## Installation
 
 ```
-composer require personnummer/personnummer
+composer require frozzare/personnummer
 ```
 
 ## Examples
