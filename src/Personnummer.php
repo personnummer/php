@@ -183,18 +183,17 @@ final class Personnummer
         $num     = $match[6];
         $check   = $match[7];
 
-        if (!in_array($sep, ['-', '+'])) {
-            if (empty($century) || date('Y') - intval(strval($century) . strval($year)) < 100) {
+        if (!empty($century)) {
+            if (date('Y') - intval(strval($century) . strval($year)) < 100) {
                 $sep = '-';
             } else {
                 $sep = '+';
             }
-        }
-
-        if (empty($century)) {
+        } else {
             if ($sep === '+') {
                 $baseYear = date('Y', strtotime('-100 years'));
             } else {
+                $sep      = '-';
                 $baseYear = date('Y');
             }
             $century = substr(($baseYear - (($baseYear - $year) % 100)), 0, 2);

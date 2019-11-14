@@ -85,8 +85,10 @@ class PersonnummerTest extends PHPUnit_Framework_TestCase
     {
         $this->assertEquals('640327-3813', Personnummer::format(6403273813));
         $this->assertEquals('510818-9167', Personnummer::format('510818-9167'));
+        $this->assertEquals('510818-9167', Personnummer::format('19510818+9167'));
         $this->assertEquals('900101-0017', Personnummer::format('19900101-0017'));
         $this->assertEquals('130401+2931', Personnummer::format('19130401+2931'));
+        $this->assertEquals('130401+2931', Personnummer::format('19130401-2931'));
         $this->assertEquals('640823-3234', Personnummer::format('196408233234'));
         $this->assertEquals('000101-0107', Personnummer::format('0001010107'));
         $this->assertEquals('000101-0107', Personnummer::format('000101-0107'));
