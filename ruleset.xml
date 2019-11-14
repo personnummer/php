@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<ruleset name="Personnummer ruleset">
+  <description>The rules for PHP CodeSniffer</description>
+  <file>src/</file>
+  <file>tests/</file>
+
+  <!-- Run against the PHPCompatibility ruleset -->
+  <rule ref="PHPCompatibility"/>
+  <config name="testVersion" value="7.3-"/>
+
+  <!-- Run against a second ruleset -->
+  <rule ref="PSR12"/>
+
+</ruleset>

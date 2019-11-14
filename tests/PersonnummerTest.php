@@ -1,169 +1,233 @@
 <?php
 
-namespace Frozzare\Personnummer;
+namespace Personnummer\Tests;
 
-use PHPUnit_Framework_TestCase;
-use VladaHejda\AssertException;
+use DateTime;
+use Jchook\AssertThrows\AssertThrows;
+use Personnummer\Personnummer;
+use Personnummer\PersonnummerException;
+use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use TypeError;
 
-function time()
+class PersonnummerTest extends TestCase
 {
-    return 1565704890;
-}
+    use AssertThrows;
+    use AssertError;
 
-class PersonnummerTest extends PHPUnit_Framework_TestCase
-{
-    use AssertException;
+    private static $testdataList;
 
-    protected $invalidNumbers = [
-        null,
-        [],
-        true,
-        false,
-        100101001,
-        '112233-4455',
-        '19112233-4455',
-        '9999999999',
-        '199999999999',
-        '9913131315',
-        '9911311232',
-        '9902291237',
-        '19990919_3766',
-        '990919_3766',
-        '199909193776',
-        'Just a string',
-        '990919+3776',
-        '990919-3776',
-        '9909193776',
+    private static $testdataStructured;
+
+    private static $availableListFormats = [
+        'integer',
+        'long_format',
+        'short_format',
+        'separated_format',
+        'separated_long',
     ];
 
-    public function testPersonnummerWithControlDigit()
+    public static function setUpBeforeClass(): void
     {
-        $this->assertTrue(Personnummer::valid(6403273813));
-        $this->assertTrue(Personnummer::valid('510818-9167'));
-        $this->assertTrue(Personnummer::valid('19900101-0017'));
-        $this->assertTrue(Personnummer::valid('19130401+2931'));
-        $this->assertTrue(Personnummer::valid('196408233234'));
-        $this->assertTrue(Personnummer::valid('0001010107'));
-        $this->assertTrue(Personnummer::valid('000101-0107'));
-        $this->assertTrue(Personnummer::valid('101010-1010'));
+        self::$testdataList       = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/list.json'), true); // phpcs:ignore
+        self::$testdataStructured = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/structured.json'), true); // phpcs:ignore
     }
 
-    public function testPersonnummerWithoutControlDigit()
+    public function testParse()
     {
-        $this->assertFalse(Personnummer::valid(640327381));
-        $this->assertFalse(Personnummer::valid('510818-916'));
-        $this->assertFalse(Personnummer::valid('19900101-001'));
-        $this->assertFalse(Personnummer::valid('100101+001'));
+        $this->assertSame(Personnummer::class, get_class(Personnummer::parse('1212121212')));
+        $this->assertEquals(new Personnummer('1212121212'), Personnummer::parse('1212121212'));
     }
 
-    public function testPersonnummerWithWrongTypes()
+    public function testOptions()
     {
-        foreach ($this->invalidNumbers as $invalidNumber) {
-            $this->assertFalse(Personnummer::valid($invalidNumber));
+        new Personnummer('1212621211');
+
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('1212621211', ['allowCoordinationNumber' => false]);
+        });
+        $this->assertError(function () {
+            new Personnummer('1212121212', ['invalidOption' => true]);
+        }, E_USER_WARNING);
+    }
+
+    public function testPersonnummerData()
+    {
+        foreach (self::$testdataList as $testdata) {
+            foreach (self::$availableListFormats as $format) {
+                $this->assertSame(
+                    $testdata['valid'],
+                    Personnummer::valid($testdata[$format]),
+                    sprintf(
+                        '%s (%s) should be %s',
+                        $testdata[$format],
+                        $format,
+                        $testdata['valid'] ? 'valid' : 'not valid'
+                    )
+                );
+            }
         }
-    }
 
-    public function testCoOrdinationNumbers()
-    {
-        $this->assertTrue(Personnummer::valid('701063-2391'));
-        $this->assertTrue(Personnummer::valid('640883-3231'));
-    }
-
-    public function testExcludeOfCoOrdinationNumbers()
-    {
-        $this->assertFalse(Personnummer::valid('701063-2391', false));
-        $this->assertFalse(Personnummer::valid('640883-3231', false));
-    }
-
-    public function testWrongCoOrdinationNumbers()
-    {
-        $this->assertFalse(Personnummer::valid('900161-0017'));
-        $this->assertFalse(Personnummer::valid('640893-3231'));
+        foreach (self::$testdataStructured as $ssnType => $testdataInputs) {
+            foreach ($testdataInputs as $testdataType => $testdata) {
+                foreach ($testdata as $valid => $ssns) {
+                    foreach ($ssns as $ssn) {
+                        $this->assertSame(
+                            $valid === 'valid' && $ssnType === 'ssn',
+                            Personnummer::valid($ssn, ['allowCoordinationNumber' => false]),
+                            sprintf(
+                                '%s should be %s',
+                                $ssn,
+                                ($valid === 'valid' && $ssnType === 'ssn' ? 'valid' : 'not valid')
+                            )
+                        );
+                    }
+                }
+            }
+        }
     }
 
     public function testFormat()
     {
-        $this->assertEquals('640327-3813', Personnummer::format(6403273813));
-        $this->assertEquals('510818-9167', Personnummer::format('510818-9167'));
-        $this->assertEquals('510818-9167', Personnummer::format('19510818+9167'));
-        $this->assertEquals('900101-0017', Personnummer::format('19900101-0017'));
-        $this->assertEquals('130401+2931', Personnummer::format('19130401+2931'));
-        $this->assertEquals('130401+2931', Personnummer::format('19130401-2931'));
-        $this->assertEquals('640823-3234', Personnummer::format('196408233234'));
-        $this->assertEquals('000101-0107', Personnummer::format('0001010107'));
-        $this->assertEquals('000101-0107', Personnummer::format('000101-0107'));
-        $this->assertEquals('130401+2931', Personnummer::format('191304012931'));
+        foreach (self::$testdataList as $testdata) {
+            if ($testdata['valid']) {
+                foreach (self::$availableListFormats as $format) {
+                    if ($format === 'short_format' && strpos($testdata['separated_format'], '+') !== false) {
+                        continue;
+                    }
 
-        $this->assertEquals('196403273813', Personnummer::format(6403273813, true));
-        $this->assertEquals('195108189167', Personnummer::format('510818-9167', true));
-        $this->assertEquals('199001010017', Personnummer::format('19900101-0017', true));
-        $this->assertEquals('191304012931', Personnummer::format('19130401+2931', true));
-        $this->assertEquals('196408233234', Personnummer::format('196408233234', true));
-        $this->assertEquals('200001010107', Personnummer::format('0001010107', true));
-        $this->assertEquals('200001010107', Personnummer::format('000101-0107', true));
-        $this->assertEquals('190001010107', Personnummer::format('000101+0107', true));
+                    $this->assertSame($testdata['separated_format'], (new Personnummer($testdata[$format]))->format());
+
+                    $this->assertSame($testdata['long_format'], Personnummer::parse($testdata[$format])->format(true));
+                }
+            }
+        }
     }
 
-    public function testFormatWithInvalidNumbers()
+    public function testThrowsErrorOnInvalid()
     {
-        foreach ($this->invalidNumbers as $invalidNumber) {
-            $this->assertFalse(Personnummer::format($invalidNumber));
+        foreach (self::$testdataList as $testdata) {
+            if (!$testdata['valid']) {
+                foreach (self::$availableListFormats as $format) {
+                    $this->assertThrows(PersonnummerException::class, function () use ($testdata, $format) {
+                        Personnummer::parse($testdata[$format]);
+                    });
+                    $this->assertFalse(Personnummer::valid($testdata[$format]));
+                }
+            }
+
+            if ($testdata['type'] === 'con') {
+                foreach (self::$availableListFormats as $format) {
+                    $this->assertThrows(PersonnummerException::class, function () use ($testdata, $format) {
+                        Personnummer::parse($testdata[$format], ['allowCoordinationNumber' => false]);
+                    });
+                    $this->assertFalse(Personnummer::valid($testdata[$format], ['allowCoordinationNumber' => false]));
+                }
+            }
+        }
+
+        for ($i = 0; $i < 2; $i++) {
+            $this->assertThrows(PersonnummerException::class, function () use ($i) {
+                new Personnummer(boolval($i));
+            });
+
+            $this->assertFalse(Personnummer::valid(boolval($i)));
+        }
+
+        foreach ([null, []] as $invalidType) {
+            $this->assertThrows(TypeError::class, function () use ($invalidType) {
+                new Personnummer($invalidType);
+            });
+            $this->assertThrows(TypeError::class, function () use ($invalidType) {
+                Personnummer::valid($invalidType);
+            });
         }
     }
 
     public function testAge()
     {
-        $this->assertSame(55, Personnummer::getAge(6403273813));
-        $this->assertSame(67, Personnummer::getAge('510818-9167'));
-        $this->assertSame(29, Personnummer::getAge('19900101-0017'));
-        $this->assertSame(106, Personnummer::getAge('19130401+2931'));
-        $this->assertSame(19, Personnummer::getAge('200002296127'));
-    }
+        foreach (self::$testdataList as $testdata) {
+            if ($testdata['valid']) {
+                $birthdate = substr($testdata['separated_long'], 0, 8);
+                if ($testdata['type'] === 'con') {
+                    $birthdate = substr($birthdate, 0, 6) .
+                        str_pad(intval(substr($birthdate, -2)) - 60, 2, "0", STR_PAD_LEFT);
+                }
 
-    public function testAgeWithCoOrdinationNumbers()
-    {
-        $this->assertSame(48, Personnummer::getAge('701063-2391'));
-        $this->assertSame(54, Personnummer::getAge('640883-3231'));
-    }
+                $expected = intval((new DateTime($birthdate))->diff(new DateTime())->format('%y'));
 
-    public function testAgeWithInvalidNumbers()
-    {
-        foreach ($this->invalidNumbers as $invalidNumber) {
-            $this->assertEmpty(Personnummer::getAge($invalidNumber));
+                foreach (self::$availableListFormats as $format) {
+                    if ($format === 'short_format' && strpos($testdata['separated_format'], '+') !== false) {
+                        continue;
+                    }
+
+                    $this->assertSame($expected, Personnummer::parse($testdata[$format])->age);
+                    $this->assertSame($expected, Personnummer::parse($testdata[$format])->__get('age'));
+                }
+            }
         }
     }
 
-    public function testExcludeOfCoOrdinationNumbersAge()
+    public function testAgeOnBirthday()
     {
-        $this->assertEmpty(Personnummer::getAge('701063-2391', false));
-        $this->assertEmpty(Personnummer::getAge('640883-3231', false));
+        $date     = (new DateTime())->modify('-30 years midnight');
+        $expected = intval($date->diff(new DateTime())->format('%y'));
+
+        $ssn = $date->format('Ymd') . '999';
+
+        // Access private luhn method
+        $reflector = new ReflectionClass(Personnummer::class);
+        $method    = $reflector->getMethod('luhn');
+        $method->setAccessible(true);
+        $ssn .= $method->invoke(null, substr($ssn, 2));
+
+        $this->assertSame($expected, Personnummer::parse($ssn)->age);
     }
 
     public function testSex()
     {
-        $this->assertTrue(Personnummer::isMale(6403273813, false));
-        $this->assertFalse(Personnummer::isFemale(6403273813, false));
-        $this->assertTrue(Personnummer::isFemale('510818-9167', false));
-        $this->assertFalse(Personnummer::isMale('510818-9167', false));
-    }
-
-    public function testSexWithCoOrdinationNumbers()
-    {
-        $this->assertTrue(Personnummer::isMale('701063-2391'));
-        $this->assertFalse(Personnummer::isFemale('701063-2391'));
-        $this->assertTrue(Personnummer::isFemale('640883-3223'));
-        $this->assertFalse(Personnummer::isMale('640883-3223'));
-    }
-
-    public function testSexWithInvalidNumbers()
-    {
-        foreach ($this->invalidNumbers as $invalidNumber) {
-            $this->assertException(function () use ($invalidNumber) {
-                Personnummer::isMale($invalidNumber);
-            }, PersonnummerException::class);
-            $this->assertException(function () use ($invalidNumber) {
-                Personnummer::isFemale($invalidNumber);
-            }, PersonnummerException::class);
+        foreach (self::$testdataList as $testdata) {
+            if ($testdata['valid']) {
+                foreach (self::$availableListFormats as $format) {
+                    $this->assertSame($testdata['isMale'], Personnummer::parse($testdata[$format])->isMale());
+                    $this->assertSame($testdata['isFemale'], Personnummer::parse($testdata[$format])->isFemale());
+                }
+            }
         }
+    }
+
+    public function testProperties()
+    {
+        // Parts, as position and length
+        $separatedLongParts = [
+            'century'  => [0, 2],
+            'year'     => [2, 2],
+            'fullYear' => [0, 4],
+            'month'    => [4, 2],
+            'day'      => [6, 2],
+            'sep'      => [8, 1],
+            'num'      => [9, 3],
+            'check'    => [12, 1],
+        ];
+        foreach (self::$testdataList as $testdata) {
+            if ($testdata['valid']) {
+                foreach ($separatedLongParts as $partName => $pos) {
+                    $expected = call_user_func_array('substr', array_merge([$testdata['separated_long']], $pos));
+                    $this->assertSame($expected, Personnummer::parse($testdata['separated_format'])->$partName);
+                    $this->assertSame($expected, Personnummer::parse($testdata['separated_format'])->__get($partName));
+                    $this->assertTrue(isset(Personnummer::parse($testdata['separated_format'])->$partName));
+                }
+
+                $this->assertTrue(isset(Personnummer::parse($testdata['separated_format'])->age));
+            }
+        }
+    }
+
+    public function testMissingProperties()
+    {
+        $this->assertError(function () {
+            Personnummer::parse('1212121212')->missingProperty;
+        }, E_USER_NOTICE);
+        $this->assertFalse(isset(Personnummer::parse('121212-1212')->missingProperty));
     }
 }
