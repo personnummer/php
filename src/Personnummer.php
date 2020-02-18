@@ -1,52 +1,70 @@
 <?php
 
-namespace Frozzare\Personnummer;
+namespace Personnummer;
 
 use DateTime;
 use Exception;
+use TypeError;
 
-final class Personnummer
+/**
+ * Class Personnummer
+ *
+ * @package       Personnummer
+ *
+ * @property-read string $century
+ * @property-read string $year
+ * @property-read string $fullYear
+ * @property-read string $month
+ * @property-read string $day
+ * @property-read string $sep
+ * @property-read string $num
+ * @property-read string $check
+ *
+ * @property-read int    $age
+ */
+final class Personnummer implements PersonnummerInterface
 {
+    private $parts;
+
+    private $options = [
+        'allowCoordinationNumber' => true,
+    ];
+
     /**
-     * Validate a Swedish social security/coordination number.
      *
-     * @param string|int $ssn                       Social security number to validate.
-     * @param bool       $includeCoordinationNumber If to include Coordination numbers as valid numbers.
+     * @param string $ssn
+     * @param array  $options
+     *
+     * @return PersonnummerInterface
+     *
+     * @throws PersonnummerException
+     */
+    public static function parse(string $ssn, array $options = []): PersonnummerInterface
+    {
+        return new self($ssn, $options);
+    }
+
+    /**
+     * Check if a Swedish social security number is for a male.
      *
      * @return bool
      */
-    public static function valid($ssn, $includeCoordinationNumber = true)
+    public function isMale(): bool
     {
-        if (!is_numeric($ssn) && !is_string($ssn)) {
-            return false;
-        }
+        $parts       = $this->parts;
+        $genderDigit = substr($parts['num'], -1);
 
-        $ssn = strval($ssn);
-        try {
-            $parts = self::getParts($ssn);
-        } catch (PersonnummerException $exception) {
-            return false;
-        }
+        return boolval($genderDigit % 2);
+    }
 
-        $parts = array_pad($parts, 7, '');
-
-        if (in_array('', $parts, true)) {
-            return false;
-        }
-
-        list($century, $year, $month, $day, $sep, $num, $check) = array_values($parts);
-
-        $validDate               = checkdate($month, $day, strval($century) . strval($year));
-        $validCoOrdinationNumber = $includeCoordinationNumber ?
-            checkdate($month, intval($day) - 60, strval($century) . strval($year)) : false;
-
-        if (!$validDate && !$validCoOrdinationNumber) {
-            return false;
-        }
-
-        $valid = self::luhn($year . $month . $day . $num) === intval($check);
-
-        return $valid;
+    /**
+     * Check if a Swedish social security number is for a female.
+     *
+     * @return bool
+     */
+    public function isFemale(): bool
+    {
+        return !$this->isMale();
     }
 
     /**
@@ -55,19 +73,13 @@ final class Personnummer
      *
      * If the input number could not be parsed an empty string will be returned.
      *
-     * @param string|int $ssn        Social Security or Coordination number to format.
-     * @param bool       $longFormat YYMMDD-XXXX or YYYYMMDDXXXX since the tax office says both are official
+     * @param bool $longFormat short format YYMMDD-XXXX or long YYYYMMDDXXXX since the tax office says both are official
      *
      * @return string
-     * @throws PersonnummerException On parse failure.
      */
-    public static function format($ssn, $longFormat = false)
+    public function format(bool $longFormat = false): string
     {
-        if (!self::valid($ssn)) {
-            return false;
-        }
-
-        $parts = self::getParts($ssn);
+        $parts = $this->parts;
 
         if ($longFormat) {
             $format = '%1$s%2$s%3$s%4$s%6$s%7$s';
@@ -75,7 +87,7 @@ final class Personnummer
             $format = '%2$s%3$s%4$s%5$s%6$s%7$s';
         }
 
-        $return = sprintf(
+        return sprintf(
             $format,
             $parts['century'],
             $parts['year'],
@@ -85,77 +97,22 @@ final class Personnummer
             $parts['num'],
             $parts['check']
         );
-
-        return $return;
     }
 
-    /**
-     * Get age from a Swedish social security/coordination number.
-     *
-     * @param string|int $ssn                       Social security/coordination number to get age from.
-     * @param bool       $includeCoordinationNumber If to include coordination numbers in
-     *
-     * @return int
-     * @throws PersonnummerException On parse failure.
-     */
-    public static function getAge($ssn, $includeCoordinationNumber = true)
+    public function isCoordinationNumber(): bool
     {
-        if (!self::valid($ssn, $includeCoordinationNumber)) {
-            return 0;
-        }
+        $parts = $this->parts;
 
-        $parts = self::getParts($ssn);
+        return checkdate(intval($parts['month']), $parts['day'] - 60, $parts['fullYear']);
+    }
 
-        $day = intval($parts['day']);
-        if ($includeCoordinationNumber && $day >= 61 && $day <= 91) {
-            $day -= 60;
-        }
-
-        $ts = time();
-        $d1 = new DateTime("@$ts");
-
+    public static function valid(string $ssn, array $options = []): bool
+    {
         try {
-            $d2 = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
-        } catch (Exception $e) {
-            return 0;
+            return self::parse($ssn, $options)->isValid();
+        } catch (PersonnummerException $exception) {
+            return false;
         }
-
-        return $d1->diff($d2)->y;
-    }
-
-    /**
-     * Check if a Swedish social security number is for a male.
-     *
-     * @param string|int $ssn                       Social security number to test.
-     * @param bool       $includeCoordinationNumber If to include Coordination numbers as valid numbers.
-     *
-     * @return bool
-     * @throws PersonnummerException On parse failure.
-     */
-    public static function isMale($ssn, $includeCoordinationNumber = true)
-    {
-        if (!self::valid($ssn, $includeCoordinationNumber)) {
-            throw new PersonnummerException();
-        }
-
-        $parts       = self::getParts($ssn);
-        $genderDigit = substr($parts['num'], -1);
-
-        return boolval($genderDigit % 2);
-    }
-
-    /**
-     * Check if a Swedish social security number is for a female.
-     *
-     * @param string|int $ssn                       Social security number to test.
-     * @param bool       $includeCoordinationNumber If to include Coordination numbers as valid numbers.
-     *
-     * @return bool
-     * @throws PersonnummerException On parse failure.
-     */
-    public static function isFemale($ssn, $includeCoordinationNumber = true)
-    {
-        return !static::isMale($ssn, $includeCoordinationNumber);
     }
 
     /**
@@ -166,48 +123,38 @@ final class Personnummer
      * @return array
      * @throws PersonnummerException On parse failure.
      */
-    protected static function getParts($ssn)
+    private static function getParts(string $ssn): array
     {
-        $reg = '/^(\d{2}){0,1}(\d{2})(\d{2})(\d{2})([\+\-\s]?)(\d{3})(\d)$/';
+        // phpcs:ignore
+        $reg = '/^(?\'century\'\d{2}){0,1}(?\'year\'\d{2})(?\'month\'\d{2})(?\'day\'\d{2})(?\'sep\'[\+\-\s]?)(?\'num\'\d{3})(?\'check\'\d)$/';
         preg_match($reg, $ssn, $match);
 
-        if (!isset($match) || count($match) !== 8) {
+        if (empty($match)) {
             throw new PersonnummerException();
         }
 
-        $century = $match[1];
-        $year    = $match[2];
-        $month   = $match[3];
-        $day     = $match[4];
-        $sep     = $match[5];
-        $num     = $match[6];
-        $check   = $match[7];
+        // Remove numeric matches
+        $parts = array_filter($match, 'is_string', ARRAY_FILTER_USE_KEY);
 
-        if (!empty($century)) {
-            if (date('Y') - intval(strval($century) . strval($year)) < 100) {
-                $sep = '-';
+        if (!empty($parts['century'])) {
+            if (date('Y') - intval(strval($parts['century']) . strval($parts['year'])) < 100) {
+                $parts['sep'] = '-';
             } else {
-                $sep = '+';
+                $parts['sep'] = '+';
             }
         } else {
-            if ($sep === '+') {
+            if ($parts['sep'] === '+') {
                 $baseYear = date('Y', strtotime('-100 years'));
             } else {
-                $sep      = '-';
-                $baseYear = date('Y');
+                $parts['sep'] = '-';
+                $baseYear     = date('Y');
             }
-            $century = substr(($baseYear - (($baseYear - $year) % 100)), 0, 2);
+            $parts['century'] = substr(($baseYear - (($baseYear - $parts['year']) % 100)), 0, 2);
         }
 
-        return [
-            'century' => $century,
-            'year'    => $year,
-            'month'   => $month,
-            'day'     => $day,
-            'sep'     => $sep,
-            'num'     => $num,
-            'check'   => $check,
-        ];
+        $parts['fullYear'] = $parts['century'] . $parts['year'];
+
+        return $parts;
     }
 
     /**
@@ -217,7 +164,7 @@ final class Personnummer
      *
      * @return int
      */
-    private static function luhn($str)
+    private static function luhn(string $str): int
     {
         $sum = 0;
 
@@ -233,5 +180,113 @@ final class Personnummer
         }
 
         return intval(ceil($sum / 10) * 10 - $sum);
+    }
+
+    /**
+     * Personnummer constructor.
+     *
+     * @param string $ssn
+     * @param array  $options
+     *
+     * @throws PersonnummerException When $ssn is unparsable or invalid
+     */
+    public function __construct(string $ssn, array $options = [])
+    {
+        $this->options = $this->parseOptions($options);
+        $this->parts   = self::getParts($ssn);
+
+        if (!$this->isValid()) {
+            throw new PersonnummerException();
+        }
+    }
+
+    /**
+     * Get age from a Swedish social security/coordination number.
+     *
+     * @return int
+     *
+     * @throws Exception When date is invalid or problems with DateTime library
+     */
+    public function getAge(): int
+    {
+        $parts = $this->parts;
+
+        $day = intval($parts['day']);
+        if ($this->isCoordinationNumber()) {
+            $day -= 60;
+        }
+
+        $birthday = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
+
+        return (new DateTime())->diff($birthday)->y;
+    }
+
+    public function __get(string $name)
+    {
+        if (isset($this->parts[$name])) {
+            return $this->parts[$name];
+        }
+
+        if ($name === 'age') {
+            return $this->getAge();
+        }
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        trigger_error(
+            sprintf(
+                'Undefined property via __get(): %s in %s on line %d',
+                $name,
+                $trace[0]['file'],
+                $trace[0]['line']
+            ),
+            E_USER_NOTICE
+        );
+
+        return null;
+    }
+
+    public function __isset(string $name): bool
+    {
+        return array_key_exists($name, $this->parts) || in_array($name, ['age']);
+    }
+
+    /**
+     * Validate a Swedish social security/coordination number.
+     *
+     * @return bool
+     */
+    private function isValid(): bool
+    {
+        $parts = $this->parts;
+
+        if ($this->options['allowCoordinationNumber'] && $this->isCoordinationNumber()) {
+            $validDate = true;
+        } else {
+            $validDate = checkdate($parts['month'], $parts['day'], $parts['century'] . $parts['year']);
+        }
+
+        $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
+        $validCheck = self::luhn($checkStr) === intval($parts['check']);
+
+        return $validDate && $validCheck;
+    }
+
+    private function parseOptions(array $options): array
+    {
+        $defaultOptions = $this->options;
+        if ($unknownKeys = array_diff_key($options, $defaultOptions)) {
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+            trigger_error(
+                sprintf(
+                    'Undefined option: %s in %s on line %d',
+                    reset($unknownKeys),
+                    $trace[0]['file'],
+                    $trace[0]['line']
+                ),
+                E_USER_WARNING
+            );
+        }
+
+        return array_merge($defaultOptions, array_intersect_key($options, $defaultOptions));
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Frozzare\Personnummer;
+namespace Personnummer;
 
 use Exception;
 

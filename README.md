@@ -1,55 +1,95 @@
-# personnummer [![Build Status](https://travis-ci.org/personnummer/php.svg?branch=master)](https://travis-ci.org/personnummer/php) ![Packagist Version](https://img.shields.io/packagist/v/frozzare/personnummer) ![PHP from Packagist](https://img.shields.io/packagist/php-v/frozzare/personnummer)
+# personnummer [![Build Status](https://travis-ci.org/personnummer/php.svg?branch=master)](https://travis-ci.org/personnummer/php) ![Packagist Version](https://img.shields.io/packagist/v/personnummer/personnummer) ![PHP from Packagist](https://img.shields.io/packagist/php-v/personnummer/personnummer)
 
 Validate Swedish social security numbers.
 
 ## Installation
 
 ```
-composer require frozzare/personnummer
+composer require personnummer/personnummer
 ```
+
+## Methods
+#### Static
+| Method | Arguments                                                      | Returns  |
+| -------|:---------------------------------------------------------------|---------:|
+| parse  | string personnummer, [ array options<sup>[*](#options)</sup> ] | Instance |
+| valid  | string personnummer, [ array options<sup>[*](#options)</sup> ] | bool     |
+
+#### Instance
+| Method               | Arguments       | Returns |
+| ---------------------|:----------------|--------:|
+| format               | bool longFormat | string  |
+| getAge               | none            | int     |
+| isMale               | none            | bool    |
+| isFemale             | none            | bool    |
+| isCoordinationNumber | none            | bool    |
+
+| Property | Type   | Description                 |
+| ---------|:-------|----------------------------:|
+| age      | int    | Current age                 |
+| century  | string | Century, two digits         |
+| year     | string | Year, two digits            |
+| fullYear | string | Year, four digits           |
+| month    | string | Month, two digits           |
+| day      | string | Day, two digits             |
+| sep      | string | Separator (-/+)             |
+| num      | string | Suffix number, three digits |
+| check    | string | Luhn check digit, one digit |
+
+## Errors
+When a personnummer is invalid a PersonnummerException is thrown.
+
+## Options
+| Option                  | Type | Default | Description                 |
+| ------------------------|:-----|:--------|:---------------------------:|
+| allowCoordinationNumber | bool | true    | Accept coordination numbers |
 
 ## Examples
 
 ### Validation
 
 ```php
-use Frozzare\Personnummer\Personnummer;
+use Personnummer\Personnummer;
 
-Personnummer::valid(6403273813);
+Personnummer::valid(1212121212);
 //=> true
 
-Personnummer::valid('19130401+2931');
+Personnummer::valid('20121212-1212');
 //=> true
 ```
 
 ### Format
 ```php
-use Frozzare\Personnummer\Personnummer;
+use Personnummer\Personnummer;
 
 // Short format (YYMMDD-XXXX)
-Personnummer::format(6403273813);
-//=> 640327-3813
+(new Personnummer(1212121212))->format();
+//=> 121212-1212
+
+// Short format for 100+ years old
+(new Personnummer('191212121212'))->format();
+//=> 121212+1212
 
 // Long format (YYYYMMDDXXXX)
-Personnummer::format('6403273813', true);
-//=> 196403273813
+(new Personnummer('1212121212'))->format(true);
+//=> 201212121212
 ```
 
 ### Get Age
 ```php
-use Frozzare\Personnummer\Personnummer;
+use Personnummer\Personnummer;
 
-Personnummer::getAge(6403273813);
-//=> 55
+(new Personnummer('1212121212'))->age;
+//=> 7
 ```
 
 ### Get Sex
 ```php
-use Frozzare\Personnummer\Personnummer;
+use Personnummer\Personnummer;
 
-Personnummer::isMale(6403273813);
+(new Personnummer('1212121212'))->isMale();
 //=> true
-Personnummer::isFemale(6403273813);
+(new Personnummer('1212121212'))->isFemale();
 //=> false
 ```
 
