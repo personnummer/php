@@ -1,4 +1,4 @@
-# personnummer [![Build Status](https://travis-ci.org/personnummer/php.svg?branch=master)](https://travis-ci.org/personnummer/php) ![Packagist Version](https://img.shields.io/packagist/v/personnummer/personnummer) ![PHP from Packagist](https://img.shields.io/packagist/php-v/personnummer/personnummer)
+# personnummer [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/personnummer/php/PHP%20Composer)](https://github.com/personnummer/php/actions) ![Packagist Version](https://img.shields.io/packagist/v/personnummer/personnummer) ![PHP from Packagist](https://img.shields.io/packagist/php-v/personnummer/personnummer)
 
 Validate Swedish social security numbers.
 
