@@ -4,7 +4,6 @@ namespace Personnummer;
 
 use DateTime;
 use Exception;
-use TypeError;
 
 /**
  * Class Personnummer
@@ -19,8 +18,6 @@ use TypeError;
  * @property-read string $sep
  * @property-read string $num
  * @property-read string $check
- *
- * @property-read int    $age
  */
 final class Personnummer implements PersonnummerInterface
 {
@@ -227,10 +224,6 @@ final class Personnummer implements PersonnummerInterface
             return $this->parts[$name];
         }
 
-        if ($name === 'age') {
-            return $this->getAge();
-        }
-
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         trigger_error(
             sprintf(
@@ -247,7 +240,7 @@ final class Personnummer implements PersonnummerInterface
 
     public function __isset(string $name): bool
     {
-        return array_key_exists($name, $this->parts) || in_array($name, ['age']);
+        return array_key_exists($name, $this->parts);
     }
 
     /**

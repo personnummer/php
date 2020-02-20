@@ -26,7 +26,6 @@ composer require personnummer/personnummer
 
 | Property | Type   | Description                 |
 | ---------|:-------|----------------------------:|
-| age      | int    | Current age                 |
 | century  | string | Century, two digits         |
 | year     | string | Year, two digits            |
 | fullYear | string | Year, four digits           |
