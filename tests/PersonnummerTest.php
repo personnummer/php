@@ -161,8 +161,7 @@ class PersonnummerTest extends TestCase
                         continue;
                     }
 
-                    $this->assertSame($expected, Personnummer::parse($testdata[$format])->age);
-                    $this->assertSame($expected, Personnummer::parse($testdata[$format])->__get('age'));
+                    $this->assertSame($expected, Personnummer::parse($testdata[$format])->getAge());
                 }
             }
         }
@@ -181,7 +180,7 @@ class PersonnummerTest extends TestCase
         $method->setAccessible(true);
         $ssn .= $method->invoke(null, substr($ssn, 2));
 
-        $this->assertSame($expected, Personnummer::parse($ssn)->age);
+        $this->assertSame($expected, Personnummer::parse($ssn)->getAge());
     }
 
     public function testSex()
@@ -217,8 +216,6 @@ class PersonnummerTest extends TestCase
                     $this->assertSame($expected, Personnummer::parse($testdata['separated_format'])->__get($partName));
                     $this->assertTrue(isset(Personnummer::parse($testdata['separated_format'])->$partName));
                 }
-
-                $this->assertTrue(isset(Personnummer::parse($testdata['separated_format'])->age));
             }
         }
     }
