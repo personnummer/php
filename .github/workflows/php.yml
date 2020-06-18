@@ -18,12 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup PHP Action
-        uses: shivammathur/setup-php@2.0.0
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
+          tools: composer:v1
       - name: Validate composer.json and composer.lock
-        run: composer validate
+        run: |
+          composer --version
+          composer validate
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --with-all-dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
       - name: Run test suite
         run: composer run-script test
