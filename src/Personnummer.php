@@ -84,6 +84,10 @@ final class Personnummer implements PersonnummerInterface
             $format = '%2$s%3$s%4$s%5$s%6$s%7$s';
         }
 
+        if ($this->isReserveNumber()) {
+            $parts['num'][0] = $this->reserveNumberCharacter;
+        }
+
         return sprintf(
             $format,
             $parts['century'],
