@@ -46,9 +46,29 @@ class PersonnummerTest extends TestCase
         $this->assertThrows(PersonnummerException::class, function () {
             new Personnummer('1212621211', ['allowCoordinationNumber' => false]);
         });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('000101-R220', ['allowReserveNumber' => false]);
+        });
         $this->assertError(function () {
             new Personnummer('1212121212', ['invalidOption' => true]);
         }, E_USER_WARNING);
+    }
+
+    public function testReserveNumber()
+    {
+        // Valid reserve numbers, where R/T gets replaced by a digit 1:
+        $longNumber = new Personnummer('20000101-R220');
+        $shortNumber = new Personnummer('000101-R220');
+        $differentLetterNumber = new Personnummer('000101-T220');
+
+        $this->assertEquals('000101-R220', $longNumber->format());
+        $this->assertEquals('000101-R220', $shortNumber->format());
+        $this->assertEquals('000101-T220', $differentLetterNumber->format());
+    }
+
+    public function testParseReserveNumber()
+    {
+        $this->assertEquals(new Personnummer('000101-R220'), Personnummer::parse('000101-R220'));
     }
 
     public function testPersonnummerData()
