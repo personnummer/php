@@ -155,6 +155,30 @@ final class Personnummer implements PersonnummerInterface
     }
 
     /**
+     * Find integer position of letter, or return bool false.
+     * @param string $ssn
+     * @return false|int
+     */
+    private static function containsLetter(string $ssn)
+    {
+        $ssn = strtoupper($ssn);
+
+        $letters = [
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        ];
+
+        foreach ($letters as $letter) {
+            $positionFound = strpos($ssn, $letter);
+            if ($positionFound !== false) {
+                return $positionFound;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * The Luhn algorithm.
      *
      * @param string $str String to run the Luhn algorithm on.
@@ -180,6 +204,26 @@ final class Personnummer implements PersonnummerInterface
     }
 
     /**
+     * Check if SSN is a "reserve number" (reservnummer) and set properties accordingly.
+     * @param $ssn
+     * @return string
+     */
+    private function checkIfReserveNumber($ssn): string
+    {
+        $letterPosition = self::containsLetter($ssn);
+
+        if (is_numeric($letterPosition)) {
+            // Store reserve letter:
+            $this->reserveNumberCharacter = $ssn[$letterPosition];
+
+            // Replace letter with integer value 1 and evaluate as usual:
+            $ssn[$letterPosition] = 1;
+        }
+
+        return $ssn;
+    }
+
+    /**
      * Personnummer constructor.
      *
      * @param string $ssn
@@ -189,6 +233,7 @@ final class Personnummer implements PersonnummerInterface
      */
     public function __construct(string $ssn, array $options = [])
     {
+        $ssn = $this->checkIfReserveNumber($ssn);
         $this->options = $this->parseOptions($options);
         $this->parts   = self::getParts($ssn);
 
