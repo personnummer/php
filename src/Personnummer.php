@@ -25,6 +25,8 @@ final class Personnummer implements PersonnummerInterface
 
     private $options;
 
+    private $reserveNumberCharacter;
+
     /**
      *
      * @param string $ssn
@@ -195,6 +197,11 @@ final class Personnummer implements PersonnummerInterface
         }
     }
 
+    public function isReserveNumber(): bool
+    {
+        return $this->reserveNumberCharacter !== null;
+    }
+
     /**
      * Get age from a Swedish social security/coordination number.
      *
@@ -250,6 +257,10 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
+        if (! $this->options['allowReserveNumber'] && $this->isReserveNumber()) {
+            return false;
+        }
+
         if ($this->options['allowCoordinationNumber'] && $this->isCoordinationNumber()) {
             $validDate = true;
         } else {
@@ -266,6 +277,7 @@ final class Personnummer implements PersonnummerInterface
     {
         $defaultOptions = [
             'allowCoordinationNumber' => true,
+            'allowReserveNumber' => true,
         ];
 
         if ($unknownKeys = array_diff_key($options, $defaultOptions)) {
