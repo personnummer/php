@@ -13,14 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['7.2', '7.3', '7.4']
-    name: Test PHP ${{ matrix.php-versions }}
+        php-version: ['7.2', '7.3', '7.4']
+        test-command: ['test']
+        include:
+          - php-version: '8.0'
+            test-command: 'unittest'
+
+    name: Test PHP ${{ matrix.php-version }}
     steps:
       - uses: actions/checkout@v2
       - name: Setup PHP Action
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php-version }}
           tools: composer:v1
       - name: Validate composer.json and composer.lock
         run: |
@@ -29,4 +34,4 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-suggest
       - name: Run test suite
-        run: composer run-script test
+        run: composer run-script ${{ matrix.test-command }}
