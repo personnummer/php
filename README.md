@@ -78,7 +78,7 @@ use Personnummer\Personnummer;
 ```php
 use Personnummer\Personnummer;
 
-(new Personnummer('1212121212'))->age;
+(new Personnummer('1212121212'))->getAge();
 //=> 7
 ```
 
