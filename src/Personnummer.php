@@ -119,6 +119,11 @@ final class Personnummer implements PersonnummerInterface
         return checkdate((int)$parts['month'], $parts['day'] - 60, $parts['fullYear']);
     }
 
+    public function canUseBankId(): bool
+    {
+        return ! $this->isReserveNumber() && ! $this->isVgrReserveNumber();
+    }
+
     public static function valid(string $ssn, array $options = []): bool
     {
         try {
