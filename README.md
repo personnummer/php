@@ -2,6 +2,9 @@
 
 Validate Swedish personnummer (civic numbers), samordningsnummer (coordination numbers) and reservnummer (reserve numbers).
 
+### VGR reserve numbers
+For Västra Götalands region (VGR) there is a special format for reserve numbers used.
+
 ## Installation
 
 ```
@@ -24,6 +27,7 @@ composer require pinefox/personnummer
 | isFemale             | none            | bool    |
 | isCoordinationNumber | none            | bool    |
 | isReserveNumber      | none            | bool    |
+| isVgrReserveNumber   | none            | bool    |
 
 | Property | Type   | Description                 |
 | ---------|:-------|----------------------------:|
@@ -43,7 +47,8 @@ When a personnummer is invalid a PersonnummerException is thrown.
 | Option                  | Type | Default | Description                 |
 | ------------------------|:-----|:--------|:---------------------------:|
 | allowCoordinationNumber | bool | true    | Accept coordination numbers |
-| allowReserveNumber      | bool | true    | Accept reserve number       |
+| allowReserveNumber      | bool | true    | Accept reserve numbers      |
+| allowVgrReserveNumber   | bool | true    | Accept VGR reserve numbers  |
 
 ## Examples
 

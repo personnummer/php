@@ -238,6 +238,7 @@ final class Personnummer implements PersonnummerInterface
     public function __construct(string $ssn, array $options = [])
     {
         $ssn = $this->checkIfReserveNumber($ssn);
+
         $this->options = $this->parseOptions($options);
         $this->parts   = self::getParts($ssn);
 
@@ -249,6 +250,12 @@ final class Personnummer implements PersonnummerInterface
     public function isReserveNumber(): bool
     {
         return $this->reserveNumberCharacter !== null;
+    }
+
+    public function isVgrReserveNumber(): bool
+    {
+        // TODO: implement
+        return false;
     }
 
     /**
@@ -306,6 +313,10 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
+        if (! $this->options['allowVgrReserveNumber'] && $this->isVgrReserveNumber()) {
+            return false;
+        }
+
         if (! $this->options['allowReserveNumber'] && $this->isReserveNumber()) {
             return false;
         }
@@ -317,7 +328,7 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
-        $validCheck = self::luhn($checkStr) === intval($parts['check']);
+        $validCheck = self::luhn($checkStr) === (int)$parts['check'];
 
         return $validDate && $validCheck;
     }
@@ -327,6 +338,7 @@ final class Personnummer implements PersonnummerInterface
         $defaultOptions = [
             'allowCoordinationNumber' => true,
             'allowReserveNumber' => true,
+            'allowVgrReserveNumber' => true,
         ];
 
         if ($unknownKeys = array_diff_key($options, $defaultOptions)) {
