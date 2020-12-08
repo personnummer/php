@@ -340,8 +340,56 @@ final class Personnummer implements PersonnummerInterface
 
         $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
         $validCheck = self::luhn($checkStr) === (int)$parts['check'];
+        $validNumParts = true;
 
-        return $validDate && $validCheck;
+        // If the luhn check fails, this could be a VGR reserve number:
+        if ($validCheck === false && $this->options['allowVgrReserveNumber'] && $this->isReserveNumber()) {
+            $this->setReserveNumberCharForVgr();
+
+            $checkAgain = $this->parts['year'] . $this->parts['month'] . $this->parts['day'] . $this->parts['num'];
+            $validCheck = self::luhn($checkAgain) === (int)$parts['check'];
+
+            if ($validCheck) {
+                $validNumParts = $this->validateNumPartsForVgr();
+            }
+
+            $this->isVgrReserve = $validCheck && $validNumParts;
+        }
+
+        return $validDate && $validCheck && $validNumParts;
+    }
+
+    private function validateNumPartsForVgr(): bool
+    {
+        $number = $this->parts['num'][1] . $this->parts['num'][2];
+
+        if (in_array($this->reserveNumberCharacter, ['M', 'K'])) {
+            $modulus = (int)$number % 2;
+
+            // For female gender (K), the number should be even:
+            if ($this->reserveNumberCharacter === 'K' && $modulus === 0) {
+                return true;
+            }
+
+            // For male gender (M), the number should be odd:
+            if ($this->reserveNumberCharacter === 'M' && $modulus === 1) {
+                return true;
+            }
+        }
+
+        // For unknown gender (X),the number should be between 80-89:
+        if ($this->reserveNumberCharacter === 'X' && (int)$number > 79 && (int)$number < 90) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function setReserveNumberCharForVgr(): void
+    {
+        if (array_key_exists($this->reserveNumberCharacter, $this->vgrMapping)) {
+            $this->parts['num'][0] = $this->vgrMapping[$this->reserveNumberCharacter];
+        }
     }
 
     private function parseOptions(array $options): array
