@@ -104,7 +104,7 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
-        return checkdate(intval($parts['month']), $parts['day'] - 60, $parts['fullYear']);
+        return checkdate((int)$parts['month'], $parts['day'] - 60, $parts['fullYear']);
     }
 
     public static function valid(string $ssn, array $options = []): bool
@@ -194,7 +194,7 @@ final class Personnummer implements PersonnummerInterface
         $sum = 0;
 
         for ($i = 0; $i < strlen($str); $i++) {
-            $v = intval($str[$i]);
+            $v = (int)$str[$i];
             $v *= 2 - ($i % 2);
 
             if ($v > 9) {
@@ -204,7 +204,7 @@ final class Personnummer implements PersonnummerInterface
             $sum += $v;
         }
 
-        return intval(ceil($sum / 10) * 10 - $sum);
+        return (int)ceil($sum / 10) * 10 - $sum;
     }
 
     /**
@@ -242,7 +242,7 @@ final class Personnummer implements PersonnummerInterface
         $this->options = $this->parseOptions($options);
         $this->parts   = self::getParts($ssn);
 
-        if (!$this->isValid()) {
+        if (! $this->isValid()) {
             throw new PersonnummerException();
         }
     }
