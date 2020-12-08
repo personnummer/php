@@ -324,10 +324,6 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
-        if (! $this->options['allowVgrReserveNumber'] && $this->isVgrReserveNumber()) {
-            return false;
-        }
-
         if (! $this->options['allowReserveNumber'] && $this->isReserveNumber()) {
             return false;
         }
