@@ -1,11 +1,11 @@
-# personnummer [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/personnummer/php/PHP%20Composer)](https://github.com/personnummer/php/actions) [![Packagist Version](https://img.shields.io/packagist/v/personnummer/personnummer)](https://packagist.org/packages/personnummer/personnummer) [![PHP from Packagist](https://img.shields.io/packagist/php-v/personnummer/personnummer)](https://packagist.org/packages/personnummer/personnummer)
+# personnummer
 
-Validate Swedish social security numbers.
+Validate Swedish personnummer (civic numbers), samordningsnummer (coordination numbers) and reservnummer (reserve numbers).
 
 ## Installation
 
 ```
-composer require personnummer/personnummer
+composer require pinefox/personnummer
 ```
 
 ## Methods
@@ -23,6 +23,7 @@ composer require personnummer/personnummer
 | isMale               | none            | bool    |
 | isFemale             | none            | bool    |
 | isCoordinationNumber | none            | bool    |
+| isReserveNumber      | none            | bool    |
 
 | Property | Type   | Description                 |
 | ---------|:-------|----------------------------:|
@@ -42,6 +43,7 @@ When a personnummer is invalid a PersonnummerException is thrown.
 | Option                  | Type | Default | Description                 |
 | ------------------------|:-----|:--------|:---------------------------:|
 | allowCoordinationNumber | bool | true    | Accept coordination numbers |
+| allowReserveNumber      | bool | true    | Accept reserve number       |
 
 ## Examples
 
