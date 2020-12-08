@@ -27,6 +27,18 @@ final class Personnummer implements PersonnummerInterface
 
     private $reserveNumberCharacter;
 
+    private $isVgrReserve = false;
+
+    /**
+     * If VGR reserve number, replace 9th position character with mapped value and calculate check digit.
+     * @var int[]
+     */
+    private $vgrMapping = [
+        'K' => 5,
+        'M' => 7,
+        'X' => 8,
+    ];
+
     /**
      *
      * @param string $ssn
@@ -254,8 +266,7 @@ final class Personnummer implements PersonnummerInterface
 
     public function isVgrReserveNumber(): bool
     {
-        // TODO: implement
-        return false;
+        return ($this->reserveNumberCharacter !== null && $this->isVgrReserve);
     }
 
     /**
