@@ -71,24 +71,28 @@ class PersonnummerTest extends TestCase
 
     public function testVgrReserveNumbersForFemales()
     {
-        $female = new Personnummer('19800906K148');
-        $this->assertEquals('800906-K148', $female->format());
-        $this->assertEquals('19800906K148', $female->format(true));
+        $female = new Personnummer('19561110-K064');
+        $this->assertEquals('561110-K064', $female->format());
+        $this->assertEquals('19561110K064', $female->format(true));
         $this->assertTrue($female->isVgrReserveNumber());
+
+        // Replacing K with '5' should produce the same check digit, but not identify as VGR:
+        $personnummer = new Personnummer('19561110-5064');
+        $this->assertFalse($personnummer->isVgrReserveNumber());
 
         // Wrong check digit:
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('19800906K149');
+            new Personnummer('19561110-K065');
         });
 
         // Wrong gender letter (male):
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('19800906M148');
+            new Personnummer('19561110-M064');
         });
 
         // Wrong gender letter (unknown):
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('19800906X148');
+            new Personnummer('19561110-X064');
         });
     }
 
