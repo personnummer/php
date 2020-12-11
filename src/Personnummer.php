@@ -60,10 +60,14 @@ final class Personnummer implements PersonnummerInterface
      */
     public function isMale(): bool
     {
+        if ($this->reserveNumberCharacter === 'X' && $this->isVgrReserveNumber()) {
+            return false;
+        }
+
         $parts       = $this->parts;
         $genderDigit = substr($parts['num'], -1);
 
-        return boolval($genderDigit % 2);
+        return (bool)($genderDigit % 2);
     }
 
     /**
@@ -73,6 +77,10 @@ final class Personnummer implements PersonnummerInterface
      */
     public function isFemale(): bool
     {
+        if ($this->reserveNumberCharacter === 'X' && $this->isVgrReserveNumber()) {
+            return false;
+        }
+
         return !$this->isMale();
     }
 
