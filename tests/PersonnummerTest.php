@@ -52,6 +52,9 @@ class PersonnummerTest extends TestCase
         $this->assertThrows(PersonnummerException::class, function () {
             new Personnummer('19800906K148', ['allowVgrReserveNumber' => false]);
         });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('992004920019', ['allowSllReserveNumber' => false]);
+        });
         $this->assertError(function () {
             new Personnummer('1212121212', ['invalidOption' => true]);
         }, E_USER_WARNING);
@@ -116,6 +119,61 @@ class PersonnummerTest extends TestCase
         // Wrong gender letter (unknown):
         $this->assertThrows(PersonnummerException::class, function () {
             new Personnummer('20121212X714');
+        });
+    }
+
+    public function testSllReserveNumbersForMales()
+    {
+        $male = new Personnummer('992004920019');
+        $this->assertEquals('992004920019', $male->format());
+        $this->assertTrue($male->isSllReserveNumber());
+
+        // Wrong check digit:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('992004920018');
+        });
+
+        // Wrong gender:
+        $this->assertFalse($male->isFemale());
+        $this->assertTrue($male->isMale());
+    }
+
+    public function testSllAge()
+    {
+        $personnummer = new Personnummer('992004920019');
+        $this->assertEquals(-1, $personnummer->getAge());
+    }
+
+    public function testSllReserveNumbersForFemales()
+    {
+        $female = new Personnummer('992004922486');
+        $this->assertEquals('992004922486', $female->format());
+        $this->assertTrue($female->isSllReserveNumber());
+
+        // Wrong check digit:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('992004920028');
+        });
+
+        // Wrong gender:
+        $this->assertFalse($female->isMale());
+        $this->assertTrue($female->isFemale());
+    }
+
+    public function testSllReserveNumberAge() {
+        // Future SLL number (year 2103)
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('992103920019');
+        });
+
+        // Past SLL number
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('991865951279');
+        });
+
+        // SLL number from 1965
+        $this->assertNotThrows(PersonnummerException::class, function () {
+            new Personnummer('991965950320');
         });
     }
 
