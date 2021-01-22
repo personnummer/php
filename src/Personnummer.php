@@ -27,6 +27,20 @@ final class Personnummer implements PersonnummerInterface
 
     private $reserveNumberCharacter;
 
+    private $isVgrReserve = false;
+    
+    private $isSllReserve = false;
+
+    /**
+     * If VGR reserve number, replace 9th position character with mapped value and calculate check digit.
+     * @var int[]
+     */
+    private $vgrMapping = [
+        'K' => 5,
+        'M' => 7,
+        'X' => 8,
+    ];
+
     /**
      *
      * @param string $ssn
@@ -48,10 +62,14 @@ final class Personnummer implements PersonnummerInterface
      */
     public function isMale(): bool
     {
+        if ($this->reserveNumberCharacter === 'X' && $this->isVgrReserveNumber()) {
+            return false;
+        }
+
         $parts       = $this->parts;
         $genderDigit = substr($parts['num'], -1);
 
-        return boolval($genderDigit % 2);
+        return (bool)($genderDigit % 2);
     }
 
     /**
@@ -61,6 +79,10 @@ final class Personnummer implements PersonnummerInterface
      */
     public function isFemale(): bool
     {
+        if ($this->reserveNumberCharacter === 'X' && $this->isVgrReserveNumber()) {
+            return false;
+        }
+
         return !$this->isMale();
     }
 
@@ -78,7 +100,9 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
-        if ($longFormat) {
+        if($this->isSllReserve) {
+            $format = '99%1$s%2$s%6$s%7$s';
+        } else if ($longFormat) {
             $format = '%1$s%2$s%3$s%4$s%6$s%7$s';
         } else {
             $format = '%2$s%3$s%4$s%5$s%6$s%7$s';
@@ -104,7 +128,7 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
-        return checkdate(intval($parts['month']), $parts['day'] - 60, $parts['fullYear']);
+        return checkdate((int)$parts['month'], $parts['day'] - 60, $parts['fullYear']);
     }
 
     public static function valid(string $ssn, array $options = []): bool
@@ -128,6 +152,7 @@ final class Personnummer implements PersonnummerInterface
     {
         // phpcs:ignore
         $reg = '/^(?\'century\'\d{2}){0,1}(?\'year\'\d{2})(?\'month\'\d{2})(?\'day\'\d{2})(?\'sep\'[\+\-\s]?)(?\'num\'(?!000)\d{3})(?\'check\'\d)$/';
+
         preg_match($reg, $ssn, $match);
 
         if (empty($match)) {
@@ -158,6 +183,42 @@ final class Personnummer implements PersonnummerInterface
         return $parts;
     }
 
+    private static function getSllParts(string $ssn): array
+    {
+        // phpcs:ignore
+        $reg = '/^(?\'sll\'\d{2}){0,}(?\'century\'\d{2})(?\'year\'\d{2})(?\'num\'(?!000000)\d{5})(?\'check\'\d)$/';
+
+        preg_match($reg, $ssn, $match);
+
+        if (empty($match)) {
+            throw new PersonnummerException();
+        }
+
+        $parts = array_filter($match, 'is_string', ARRAY_FILTER_USE_KEY);
+        $parts['month'] = '01';
+        $parts['day'] = '01';
+        
+        if (!empty($parts['century'])) {
+            if (date('Y') - intval(strval($parts['century']) . strval($parts['year'])) < 100) {
+                $parts['sep'] = '-';
+            } else {
+                $parts['sep'] = '+';
+            }
+        } else {
+            if ($parts['sep'] === '+') {
+                $baseYear = date('Y', strtotime('-100 years'));
+            } else {
+                $parts['sep'] = '-';
+                $baseYear     = date('Y');
+            }
+            $parts['century'] = substr(($baseYear - (($baseYear - $parts['year']) % 100)), 0, 2);
+        }
+        
+        $parts['fullYear'] = $parts['century'] . $parts['year'];
+
+        return $parts;
+    }
+
     /**
      * Find integer position of letter, or return bool false.
      * @param string $ssn
@@ -174,6 +235,7 @@ final class Personnummer implements PersonnummerInterface
 
         foreach ($letters as $letter) {
             $positionFound = strpos($ssn, $letter);
+
             if ($positionFound !== false) {
                 return $positionFound;
             }
@@ -194,7 +256,7 @@ final class Personnummer implements PersonnummerInterface
         $sum = 0;
 
         for ($i = 0; $i < strlen($str); $i++) {
-            $v = intval($str[$i]);
+            $v = (int)$str[$i];
             $v *= 2 - ($i % 2);
 
             if ($v > 9) {
@@ -204,7 +266,7 @@ final class Personnummer implements PersonnummerInterface
             $sum += $v;
         }
 
-        return intval(ceil($sum / 10) * 10 - $sum);
+        return (int)ceil($sum / 10) * 10 - $sum;
     }
 
     /**
@@ -224,6 +286,10 @@ final class Personnummer implements PersonnummerInterface
             $ssn[$letterPosition] = 1;
         }
 
+        if (substr($ssn, 0, 2) === '99' && strlen($ssn) === 12) {
+            $this->isSllReserve = true;
+        }
+
         return $ssn;
     }
 
@@ -238,10 +304,16 @@ final class Personnummer implements PersonnummerInterface
     public function __construct(string $ssn, array $options = [])
     {
         $ssn = $this->checkIfReserveNumber($ssn);
+        
         $this->options = $this->parseOptions($options);
-        $this->parts   = self::getParts($ssn);
 
-        if (!$this->isValid()) {
+        if ($this->isSllReserveNumber()) {
+            $this->parts = self::getSllParts($ssn);
+        } else {
+            $this->parts = self::getParts($ssn);
+        }
+
+        if (! $this->isValid()) {
             throw new PersonnummerException();
         }
     }
@@ -249,6 +321,16 @@ final class Personnummer implements PersonnummerInterface
     public function isReserveNumber(): bool
     {
         return $this->reserveNumberCharacter !== null;
+    }
+
+    public function isVgrReserveNumber(): bool
+    {
+        return ($this->reserveNumberCharacter !== null && $this->isVgrReserve);
+    }
+
+    public function isSllReserveNumber(): bool
+    {
+        return ($this->isSllReserve);
     }
 
     /**
@@ -265,6 +347,10 @@ final class Personnummer implements PersonnummerInterface
         $day = intval($parts['day']);
         if ($this->isCoordinationNumber()) {
             $day -= 60;
+        }
+
+        if ($this->isSllReserveNumber()) {
+            return -1;
         }
 
         $birthday = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
@@ -317,9 +403,81 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
-        $validCheck = self::luhn($checkStr) === intval($parts['check']);
+        $validCheck = self::luhn($checkStr) === (int)$parts['check'];
+        $validNumParts = true;
 
-        return $validDate && $validCheck;
+        // If the luhn check fails, this could be a VGR reserve number:
+        if ($validCheck === false && $this->options['allowVgrReserveNumber'] && $this->isReserveNumber()) {
+            $this->setReserveNumberCharForVgr();
+
+            $checkAgain = $this->parts['year'] . $this->parts['month'] . $this->parts['day'] . $this->parts['num'];
+            $validCheck = self::luhn($checkAgain) === (int)$parts['check'];
+
+            if ($validCheck) {
+                $validNumParts = $this->validateNumPartsForVgr();
+            }
+
+            $this->isVgrReserve = $validCheck && $validNumParts;
+        }
+        
+        // It could still be a SLL reserve number
+        if ($this->isSllReserveNumber() && $this->options['allowSllReserveNumber']) {
+            $checkAgain = $this->parts['century'] . $this->parts['year'] . $this->parts['num'];
+            $validCheck = self::luhn($checkAgain) === (int)$parts['check'];
+
+            if ($validCheck) {
+                $validNumParts = $this->validateNumPartsForSll();
+            }
+        }
+
+        return $validDate && $validCheck && $validNumParts;
+    }
+
+    private function validateNumPartsForVgr(): bool
+    {
+        $number = $this->parts['num'][1] . $this->parts['num'][2];
+
+        if (in_array($this->reserveNumberCharacter, ['M', 'K'])) {
+            $modulus = (int)$number % 2;
+
+            // For female gender (K), the number should be even:
+            if ($this->reserveNumberCharacter === 'K' && $modulus === 0) {
+                return true;
+            }
+
+            // For male gender (M), the number should be odd:
+            if ($this->reserveNumberCharacter === 'M' && $modulus === 1) {
+                return true;
+            }
+        }
+
+        // For unknown gender (X),the number should be between 80-89:
+        if ($this->reserveNumberCharacter === 'X' && (int)$number > 79 && (int)$number < 90) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Make sure the the issuance date of the sll-reserve number is not greater than the current year + 1.
+     * 
+     * @return bool
+     */
+    private function validateNumPartsForSll(): bool
+    {
+        $parts = $this->parts;
+        $now = new DateTime();
+
+        return (int)($parts['fullYear']) <= $now->format('Y') + 1
+                && (int)($parts['fullYear']) > 1870;
+    }
+
+    private function setReserveNumberCharForVgr(): void
+    {
+        if (array_key_exists($this->reserveNumberCharacter, $this->vgrMapping)) {
+            $this->parts['num'][0] = $this->vgrMapping[$this->reserveNumberCharacter];
+        }
     }
 
     private function parseOptions(array $options): array
@@ -327,6 +485,8 @@ final class Personnummer implements PersonnummerInterface
         $defaultOptions = [
             'allowCoordinationNumber' => true,
             'allowReserveNumber' => true,
+            'allowVgrReserveNumber' => true,
+            'allowSllReserveNumber' => true,
         ];
 
         if ($unknownKeys = array_diff_key($options, $defaultOptions)) {

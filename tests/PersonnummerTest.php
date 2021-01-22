@@ -49,6 +49,12 @@ class PersonnummerTest extends TestCase
         $this->assertThrows(PersonnummerException::class, function () {
             new Personnummer('000101-R220', ['allowReserveNumber' => false]);
         });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('19800906K148', ['allowVgrReserveNumber' => false]);
+        });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('992004920019', ['allowSllReserveNumber' => false]);
+        });
         $this->assertError(function () {
             new Personnummer('1212121212', ['invalidOption' => true]);
         }, E_USER_WARNING);
@@ -64,6 +70,134 @@ class PersonnummerTest extends TestCase
         $this->assertEquals('000101-R220', $longNumber->format());
         $this->assertEquals('000101-R220', $shortNumber->format());
         $this->assertEquals('000101-T220', $differentLetterNumber->format());
+    }
+
+    public function testVgrReserveNumbersForFemales()
+    {
+        $female = new Personnummer('19561110-K064');
+        $this->assertEquals('561110-K064', $female->format());
+        $this->assertEquals('19561110K064', $female->format(true));
+        $this->assertTrue($female->isVgrReserveNumber());
+
+        // Replacing K with '5' should produce the same check digit, but not identify as VGR:
+        $personnummer = new Personnummer('19561110-5064');
+        $this->assertFalse($personnummer->isVgrReserveNumber());
+
+        // Wrong check digit:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('19561110-K065');
+        });
+
+        // Wrong gender letter (male):
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('19561110-M064');
+        });
+
+        // Wrong gender letter (unknown):
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('19561110-X064');
+        });
+    }
+
+    public function testVgrReserveNumbersForMales()
+    {
+        $male = new Personnummer('20121212M714');
+        $this->assertEquals('121212-M714', $male->format());
+        $this->assertEquals('20121212M714', $male->format(true));
+        $this->assertTrue($male->isVgrReserveNumber());
+
+        // Wrong check digit:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20121212M713');
+        });
+
+        // Wrong gender letter (female):
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20121212K714');
+        });
+
+        // Wrong gender letter (unknown):
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20121212X714');
+        });
+    }
+
+    public function testSllReserveNumbersForMales()
+    {
+        $male = new Personnummer('992004920019');
+        $this->assertEquals('992004920019', $male->format());
+        $this->assertTrue($male->isSllReserveNumber());
+
+        // Wrong check digit:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('992004920018');
+        });
+
+        // Wrong gender:
+        $this->assertFalse($male->isFemale());
+        $this->assertTrue($male->isMale());
+    }
+
+    public function testSllAge()
+    {
+        $personnummer = new Personnummer('992004920019');
+        $this->assertEquals(-1, $personnummer->getAge());
+    }
+
+    public function testSllReserveNumbersForFemales()
+    {
+        $female = new Personnummer('992004922486');
+        $this->assertEquals('992004922486', $female->format());
+        $this->assertTrue($female->isSllReserveNumber());
+
+        // Wrong check digit:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('992004920028');
+        });
+
+        // Wrong gender:
+        $this->assertFalse($female->isMale());
+        $this->assertTrue($female->isFemale());
+    }
+
+    public function testSllReserveNumberAge() {
+        // Future SLL number (year 2103)
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('992103920019');
+        });
+
+        // Past SLL number
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('991865951279');
+        });
+
+        // SLL number from 1965
+        $this->assertNotThrows(PersonnummerException::class, function () {
+            new Personnummer('991965950320');
+        });
+    }
+
+    public function testVgrReserveNumbersForUnknownGender()
+    {
+        $unknown = new Personnummer('20121212X803');
+        $this->assertEquals('121212-X803', $unknown->format());
+        $this->assertEquals('20121212X803', $unknown->format(true));
+        $this->assertTrue($unknown->isVgrReserveNumber());
+
+        // Wrong check digit:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20121212X804');
+        });
+
+        // Wrong gender letter (female):
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20121212K803');
+        });
+
+        // Wrong gender letter (male):
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20121212M803');
+        });
     }
 
     public function testParseReserveNumber()
