@@ -28,8 +28,10 @@ final class Personnummer implements PersonnummerInterface
     private $reserveNumberCharacter;
 
     private $isVgrReserve = false;
-    
+
     private $isSllReserve = false;
+
+    private $isRvbReserve = false;
 
     /**
      * If VGR reserve number, replace 9th position character with mapped value and calculate check digit.
@@ -44,7 +46,7 @@ final class Personnummer implements PersonnummerInterface
     /**
      *
      * @param string $ssn
-     * @param array  $options
+     * @param array $options
      *
      * @return PersonnummerInterface
      *
@@ -66,7 +68,7 @@ final class Personnummer implements PersonnummerInterface
             return false;
         }
 
-        $parts       = $this->parts;
+        $parts = $this->parts;
         $genderDigit = substr($parts['num'], -1);
 
         return (bool)($genderDigit % 2);
@@ -100,15 +102,15 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
-        if($this->isSllReserve) {
+        if ($this->isSllReserve) {
             $format = '99%1$s%2$s%6$s%7$s';
-        } else if ($longFormat) {
+        } elseif ($longFormat) {
             $format = '%1$s%2$s%3$s%4$s%6$s%7$s';
         } else {
             $format = '%2$s%3$s%4$s%5$s%6$s%7$s';
         }
 
-        if ($this->isReserveNumber()) {
+        if ($this->reserveNumberCharacter) {
             $parts['num'][0] = $this->reserveNumberCharacter;
         }
 
@@ -173,7 +175,7 @@ final class Personnummer implements PersonnummerInterface
                 $baseYear = date('Y', strtotime('-100 years'));
             } else {
                 $parts['sep'] = '-';
-                $baseYear     = date('Y');
+                $baseYear = date('Y');
             }
             $parts['century'] = substr(($baseYear - (($baseYear - $parts['year']) % 100)), 0, 2);
         }
@@ -197,7 +199,7 @@ final class Personnummer implements PersonnummerInterface
         $parts = array_filter($match, 'is_string', ARRAY_FILTER_USE_KEY);
         $parts['month'] = '01';
         $parts['day'] = '01';
-        
+
         if (!empty($parts['century'])) {
             if (date('Y') - intval(strval($parts['century']) . strval($parts['year'])) < 100) {
                 $parts['sep'] = '-';
@@ -209,11 +211,11 @@ final class Personnummer implements PersonnummerInterface
                 $baseYear = date('Y', strtotime('-100 years'));
             } else {
                 $parts['sep'] = '-';
-                $baseYear     = date('Y');
+                $baseYear = date('Y');
             }
             $parts['century'] = substr(($baseYear - (($baseYear - $parts['year']) % 100)), 0, 2);
         }
-        
+
         $parts['fullYear'] = $parts['century'] . $parts['year'];
 
         return $parts;
@@ -297,14 +299,14 @@ final class Personnummer implements PersonnummerInterface
      * Personnummer constructor.
      *
      * @param string $ssn
-     * @param array  $options
+     * @param array $options
      *
      * @throws PersonnummerException When $ssn is unparsable or invalid
      */
     public function __construct(string $ssn, array $options = [])
     {
         $ssn = $this->checkIfReserveNumber($ssn);
-        
+
         $this->options = $this->parseOptions($options);
 
         if ($this->isSllReserveNumber()) {
@@ -313,24 +315,45 @@ final class Personnummer implements PersonnummerInterface
             $this->parts = self::getParts($ssn);
         }
 
-        if (! $this->isValid()) {
+        if (!$this->isValid()) {
             throw new PersonnummerException();
         }
     }
 
+    /**
+     * Superset of any other type of reserve number.
+     * @return bool
+     */
     public function isReserveNumber(): bool
+    {
+        return $this->isTNumber() ||
+            $this->isSllReserveNumber() ||
+            $this->isVgrReserveNumber() ||
+            $this->isRvbReserveNumber();
+    }
+
+    /**
+     * Generic reserve number, T/R replaced by value 1.
+     * @return bool
+     */
+    public function isTNumber(): bool
     {
         return $this->reserveNumberCharacter !== null;
     }
 
     public function isVgrReserveNumber(): bool
     {
-        return ($this->reserveNumberCharacter !== null && $this->isVgrReserve);
+        return $this->isVgrReserve;
     }
 
     public function isSllReserveNumber(): bool
     {
-        return ($this->isSllReserve);
+        return $this->isSllReserve;
+    }
+
+    public function isRvbReserveNumber(): bool
+    {
+        return $this->isRvbReserve;
     }
 
     /**
@@ -390,47 +413,135 @@ final class Personnummer implements PersonnummerInterface
      */
     private function isValid(): bool
     {
-        $parts = $this->parts;
+        // If this validates as ssn, return true:
+        if ($this->parseSsn()) {
+            return true;
+        }
 
-        if (! $this->options['allowReserveNumber'] && $this->isReserveNumber()) {
+        if ($this->options['allowTNumber'] && $this->parseTNumber()) {
+            return true;
+        }
+
+        if ($this->options['allowVgrReserveNumber'] && $this->parseVgrNumber()) {
+            return true;
+        }
+
+        if ($this->options['allowSllReserveNumber'] && $this->parseSllNumber()) {
+            return true;
+        }
+
+        if ($this->options['allowRvbReserveNumber'] && $this->parseRvbNumber()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Attempt to parse this as a regular personnummer (or coordination number).
+     * @return bool
+     */
+    private function parseSsn(): bool
+    {
+        // This cannot pass as ssn if there is a reserve number character:
+        if ($this->reserveNumberCharacter || $this->isSllReserve) {
             return false;
         }
 
         if ($this->options['allowCoordinationNumber'] && $this->isCoordinationNumber()) {
             $validDate = true;
         } else {
-            $validDate = checkdate($parts['month'], $parts['day'], $parts['century'] . $parts['year']);
+            $validDate = checkdate(
+                $this->parts['month'],
+                $this->parts['day'],
+                $this->parts['century'] . $this->parts['year']
+            );
         }
 
-        $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
-        $validCheck = self::luhn($checkStr) === (int)$parts['check'];
-        $validNumParts = true;
+        $check = $this->parts['year'] . $this->parts['month'] . $this->parts['day'] . $this->parts['num'];
+        $validCheck = self::luhn($check) === (int)$this->parts['check'];
 
-        // If the luhn check fails, this could be a VGR reserve number:
-        if ($validCheck === false && $this->options['allowVgrReserveNumber'] && $this->isReserveNumber()) {
-            $this->setReserveNumberCharForVgr();
+        return $validDate && $validCheck;
+    }
 
-            $checkAgain = $this->parts['year'] . $this->parts['month'] . $this->parts['day'] . $this->parts['num'];
-            $validCheck = self::luhn($checkAgain) === (int)$parts['check'];
-
-            if ($validCheck) {
-                $validNumParts = $this->validateNumPartsForVgr();
-            }
-
-            $this->isVgrReserve = $validCheck && $validNumParts;
-        }
-        
-        // It could still be a SLL reserve number
-        if ($this->isSllReserveNumber() && $this->options['allowSllReserveNumber']) {
-            $checkAgain = $this->parts['century'] . $this->parts['year'] . $this->parts['num'];
-            $validCheck = self::luhn($checkAgain) === (int)$parts['check'];
-
-            if ($validCheck) {
-                $validNumParts = $this->validateNumPartsForSll();
-            }
+    /**
+     * Attempt to parse this as a "T-number", replacing T (or maybe R or any character) with int 1.
+     * @return bool
+     */
+    private function parseTNumber(): bool
+    {
+        if ($this->isSllReserve) {
+            return false;
         }
 
-        return $validDate && $validCheck && $validNumParts;
+        // Without a reserve number character, this cannot be a "T-number":
+        if (!$this->reserveNumberCharacter) {
+            return false;
+        }
+
+        $validDate = checkdate(
+            $this->parts['month'],
+            $this->parts['day'],
+            $this->parts['century'] . $this->parts['year']
+        );
+
+        $check = $this->parts['year'] . $this->parts['month'] . $this->parts['day'] . $this->parts['num'];
+        $validCheck = self::luhn($check) === (int)$this->parts['check'];
+
+        return $validDate && $validCheck;
+    }
+
+    /**
+     * Attempt to parse this as a VGR number.
+     * @return bool
+     */
+    private function parseVgrNumber(): bool
+    {
+        if ($this->isSllReserve) {
+            return false;
+        }
+
+        // VGR numbers have a limited number of characters, see map:
+        $this->setReserveNumberCharForVgr();
+        $check = $this->parts['year'] . $this->parts['month'] . $this->parts['day'] . $this->parts['num'];
+        $validCheck = self::luhn($check) === (int)$this->parts['check'];
+        $this->isVgrReserve = $validCheck && $this->validateNumPartsForVgr();
+
+        return $this->isVgrReserve;
+    }
+
+    /**
+     * Attempt to parse as SLL number.
+     * @return bool
+     */
+    private function parseSllNumber(): bool
+    {
+        $check = $this->parts['century'] . $this->parts['year'] . $this->parts['num'];
+        $validCheck = self::luhn($check) === (int)$this->parts['check'];
+        $this->isSllReserve = $validCheck && $this->validateNumPartsForSll();
+
+        return $this->isSllReserve;
+    }
+
+    /**
+     * Attempt to parse as RVB number.
+     * @return bool
+     */
+    private function parseRvbNumber(): bool
+    {
+        if ($this->isSllReserve) {
+            return false;
+        }
+
+        $validDate = checkdate(
+            $this->parts['month'],
+            $this->parts['day'],
+            $this->parts['century'] . $this->parts['year']
+        );
+
+        $this->isRvbReserve = $validDate && $this->validateNumPartsForRvb();
+
+        return $this->isRvbReserve;
     }
 
     private function validateNumPartsForVgr(): bool
@@ -459,9 +570,28 @@ final class Personnummer implements PersonnummerInterface
         return false;
     }
 
+    private function validateNumPartsForRvb(): bool
+    {
+        if ($this->parts['fullYear'] < 2000) {
+            // If this individual is born in 20th century:
+            if (!in_array($this->parts['num'][1], [6, 9], false)) {
+                // Number X in YYMMDD-RXNN should be 6 or 9:
+                return false;
+            }
+        } else {
+            // If this individual is born in 21th century:
+            if ($this->parts['num'][1] !== '2') {
+                // Number X in YYMMDD-RXNN should be 2:
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Make sure the the issuance date of the sll-reserve number is not greater than the current year + 1.
-     * 
+     *
      * @return bool
      */
     private function validateNumPartsForSll(): bool
@@ -470,7 +600,7 @@ final class Personnummer implements PersonnummerInterface
         $now = new DateTime();
 
         return (int)($parts['fullYear']) <= $now->format('Y') + 1
-                && (int)($parts['fullYear']) > 1870;
+            && (int)($parts['fullYear']) > 1870;
     }
 
     private function setReserveNumberCharForVgr(): void
@@ -484,9 +614,10 @@ final class Personnummer implements PersonnummerInterface
     {
         $defaultOptions = [
             'allowCoordinationNumber' => true,
-            'allowReserveNumber' => true,
+            'allowTNumber' => true,
             'allowVgrReserveNumber' => true,
             'allowSllReserveNumber' => true,
+            'allowRvbReserveNumber' => true,
         ];
 
         if ($unknownKeys = array_diff_key($options, $defaultOptions)) {

@@ -29,7 +29,7 @@ class PersonnummerTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::$testdataList       = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/list.json'), true); // phpcs:ignore
+        self::$testdataList = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/list.json'), true); // phpcs:ignore
         self::$testdataStructured = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/structured.json'), true); // phpcs:ignore
     }
 
@@ -47,13 +47,20 @@ class PersonnummerTest extends TestCase
             new Personnummer('1212621211', ['allowCoordinationNumber' => false]);
         });
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('000101-R220', ['allowReserveNumber' => false]);
+            new Personnummer('000101-R220', [
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => false,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
         $this->assertThrows(PersonnummerException::class, function () {
             new Personnummer('19800906K148', ['allowVgrReserveNumber' => false]);
         });
         $this->assertThrows(PersonnummerException::class, function () {
             new Personnummer('992004920019', ['allowSllReserveNumber' => false]);
+        });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('820202-R620', ['allowRvbReserveNumber' => false]);
         });
         $this->assertError(function () {
             new Personnummer('1212121212', ['invalidOption' => true]);
@@ -85,17 +92,35 @@ class PersonnummerTest extends TestCase
 
         // Wrong check digit:
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('19561110-K065');
+            new Personnummer('19561110-K065', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => true,
+                'allowSllReserveNumber' => false,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
 
         // Wrong gender letter (male):
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('19561110-M064');
+            new Personnummer('19561110-M064', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => true,
+                'allowSllReserveNumber' => false,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
 
         // Wrong gender letter (unknown):
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('19561110-X064');
+            new Personnummer('19561110-X064', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => true,
+                'allowSllReserveNumber' => false,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
     }
 
@@ -130,7 +155,13 @@ class PersonnummerTest extends TestCase
 
         // Wrong check digit:
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('992004920018');
+            new Personnummer('992004920018', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => false,
+                'allowSllReserveNumber' => true,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
 
         // Wrong gender:
@@ -152,7 +183,13 @@ class PersonnummerTest extends TestCase
 
         // Wrong check digit:
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('992004920028');
+            new Personnummer('992004920028', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => false,
+                'allowSllReserveNumber' => true,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
 
         // Wrong gender:
@@ -160,20 +197,39 @@ class PersonnummerTest extends TestCase
         $this->assertTrue($female->isFemale());
     }
 
-    public function testSllReserveNumberAge() {
+    public function testSllReserveNumberAge()
+    {
         // Future SLL number (year 2103)
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('992103920019');
+            new Personnummer('992103920019', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => false,
+                'allowSllReserveNumber' => true,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
 
         // Past SLL number
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('991865951279');
+            new Personnummer('991865951279', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => false,
+                'allowSllReserveNumber' => true,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
 
         // SLL number from 1965
         $this->assertNotThrows(PersonnummerException::class, function () {
-            new Personnummer('991965950320');
+            new Personnummer('991965950320', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => false,
+                'allowSllReserveNumber' => true,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
     }
 
@@ -186,21 +242,191 @@ class PersonnummerTest extends TestCase
 
         // Wrong check digit:
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('20121212X804');
+            new Personnummer('20121212X804', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => true,
+                'allowSllReserveNumber' => false,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
 
         // Wrong gender letter (female):
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('20121212K803');
+            new Personnummer('20121212K803', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => true,
+                'allowSllReserveNumber' => false,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
 
         // Wrong gender letter (male):
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('20121212M803');
+            new Personnummer('20121212M803', [
+                'allowCoordinationNumber' => false,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => true,
+                'allowSllReserveNumber' => false,
+                'allowRvbReserveNumber' => false,
+            ]);
         });
     }
 
-    public function testParseReserveNumber()
+    public function testRvbReserveNumberForFemaleBorn20thCentury()
+    {
+        // This is valid female reserve number, someone born in 1982:
+        $female = new Personnummer('820202-R620');
+        $this->assertEquals('820202-R620', $female->format());
+        $this->assertEquals('19820202R620', $female->format(true));
+        $this->assertTrue($female->isRvbReserveNumber());
+        $this->assertTrue($female->isFemale());
+        $this->assertFalse($female->isMale());
+        //$this->assertEquals(1982, date('Y') - $female->getAge());
+
+        // Born in 19th century should have digits in, YYMMDD-R6NN or YYMMDD-R9NN:
+        foreach ([1, 2, 3, 4, 5, 7, 8] as $digit) {
+            $this->assertThrows(PersonnummerException::class, function () use ($digit) {
+                new Personnummer("820202-R{$digit}20", [
+                    'allowCoordinationNumber' => false,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => true,
+                ]);
+            });
+        }
+
+        // Females should have an even number after R:
+        foreach ([21, 23, 25, 27, 29] as $digits) {
+            $this->assertThrows(PersonnummerException::class, function () use ($digits) {
+                new Personnummer("820202-R{$digits}0", [
+                    'allowCoordinationNumber' => false,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => true,
+                ]);
+            });
+        }
+    }
+
+    public function testRvbReserveNumberForMaleBorn20thCentury()
+    {
+        // This is valid male reserve number, someone born in 1982:
+        $male = new Personnummer('820202-R630');
+        $this->assertEquals('820202-R630', $male->format());
+        $this->assertEquals('19820202R630', $male->format(true));
+        $this->assertTrue($male->isRvbReserveNumber());
+        $this->assertTrue($male->isMale());
+        $this->assertFalse($male->isFemale());
+        //$this->assertEquals(1982, date('Y') - $male->getAge());
+
+        // Born in 19th century should have digits in, YYMMDD-R6NN or YYMMDD-R9NN:
+        foreach ([1, 2, 3, 4, 5, 7, 8] as $digit) {
+            $this->assertThrows(PersonnummerException::class, function () use ($digit) {
+                new Personnummer("820202-R{$digit}30", [
+                    'allowCoordinationNumber' => false,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => true,
+                ]);
+            });
+        }
+
+        // Males should have an odd number after R:
+        foreach ([20, 22, 24, 26, 28] as $digits) {
+            $this->assertThrows(PersonnummerException::class, function () use ($digits) {
+                new Personnummer("820202-R{$digits}0", [
+                    'allowCoordinationNumber' => false,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => true,
+                ]);
+            });
+        }
+    }
+
+    public function testRvbReserveNumberForFemaleBorn21thCentury()
+    {
+        // This is valid female reserve number, someone born in 2002:
+        $female = new Personnummer('020202-R220');
+        $this->assertEquals('020202-R220', $female->format());
+        $this->assertEquals('20020202R220', $female->format(true));
+        $this->assertTrue($female->isRvbReserveNumber());
+        $this->assertTrue($female->isFemale());
+        $this->assertFalse($female->isMale());
+        //$this->assertEquals(2002, date('Y') - $female->getAge());
+
+        // Born in 21th century should have digits in, YYMMDD-R2NN:
+        foreach ([1, 3, 4, 5, 6, 7, 8, 9] as $digit) {
+            $this->assertThrows(PersonnummerException::class, function () use ($digit) {
+                new Personnummer("020202-R{$digit}20", [
+                    'allowCoordinationNumber' => false,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => true,
+                ]);
+            });
+        }
+
+        // Females should have an even number after R:
+        foreach ([21, 23, 25, 27, 29] as $digits) {
+            $this->assertThrows(PersonnummerException::class, function () use ($digits) {
+                new Personnummer("820202-R{$digits}0", [
+                    'allowCoordinationNumber' => false,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => true,
+                ]);
+            });
+        }
+    }
+
+    public function testRvbReserveNumberForMaleBorn21thCentury()
+    {
+        // This is valid male reserve number, someone born in 2002:
+        $male = new Personnummer('020202-R230');
+        $this->assertEquals('020202-R230', $male->format());
+        $this->assertEquals('20020202R230', $male->format(true));
+        $this->assertTrue($male->isRvbReserveNumber());
+        $this->assertTrue($male->isMale());
+        $this->assertFalse($male->isFemale());
+        //$this->assertEquals(2002, date('Y') - $male->getAge());
+
+        // Born in 21th century should have digits in, YYMMDD-R2NN:
+        foreach ([1, 3, 4, 5, 6, 7, 8, 9] as $digit) {
+            $this->assertThrows(PersonnummerException::class, function () use ($digit) {
+                new Personnummer("020202-R{$digit}30", [
+                    'allowCoordinationNumber' => false,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => true,
+                ]);
+            });
+        }
+
+        // Males should have an odd number after R:
+        foreach ([20, 22, 24, 26, 28] as $digits) {
+            $this->assertThrows(PersonnummerException::class, function () use ($digits) {
+                new Personnummer("820202-R{$digits}0", [
+                    'allowCoordinationNumber' => false,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => true,
+                ]);
+            });
+        }
+    }
+
+    public function testParseTNumber()
     {
         $this->assertEquals(new Personnummer('000101-R220'), Personnummer::parse('000101-R220'));
     }
@@ -211,7 +437,13 @@ class PersonnummerTest extends TestCase
             foreach (self::$availableListFormats as $format) {
                 $this->assertSame(
                     $testdata['valid'],
-                    Personnummer::valid($testdata[$format]),
+                    Personnummer::valid($testdata[$format], [
+                        'allowCoordinationNumber' => true,
+                        'allowTNumber' => false,
+                        'allowVgrReserveNumber' => false,
+                        'allowSllReserveNumber' => false,
+                        'allowRvbReserveNumber' => false,
+                    ]),
                     sprintf(
                         '%s (%s) should be %s',
                         $testdata[$format],
@@ -228,7 +460,13 @@ class PersonnummerTest extends TestCase
                     foreach ($ssns as $ssn) {
                         $this->assertSame(
                             $valid === 'valid' && $ssnType === 'ssn',
-                            Personnummer::valid($ssn, ['allowCoordinationNumber' => false]),
+                            Personnummer::valid($ssn, [
+                                'allowCoordinationNumber' => false,
+                                'allowTNumber' => false,
+                                'allowVgrReserveNumber' => false,
+                                'allowSllReserveNumber' => false,
+                                'allowRvbReserveNumber' => false,
+                            ]),
                             sprintf(
                                 '%s should be %s',
                                 $ssn,
@@ -264,36 +502,84 @@ class PersonnummerTest extends TestCase
             if (!$testdata['valid']) {
                 foreach (self::$availableListFormats as $format) {
                     $this->assertThrows(PersonnummerException::class, function () use ($testdata, $format) {
-                        Personnummer::parse($testdata[$format]);
+                        Personnummer::parse($testdata[$format], [
+                            'allowCoordinationNumber' => true,
+                            'allowTNumber' => false,
+                            'allowVgrReserveNumber' => false,
+                            'allowSllReserveNumber' => false,
+                            'allowRvbReserveNumber' => false,
+                        ]);
                     });
-                    $this->assertFalse(Personnummer::valid($testdata[$format]));
+                    $this->assertFalse(Personnummer::valid($testdata[$format], [
+                        'allowCoordinationNumber' => true,
+                        'allowTNumber' => false,
+                        'allowVgrReserveNumber' => false,
+                        'allowSllReserveNumber' => false,
+                        'allowRvbReserveNumber' => false,
+                    ]));
                 }
             }
 
             if ($testdata['type'] === 'con') {
                 foreach (self::$availableListFormats as $format) {
                     $this->assertThrows(PersonnummerException::class, function () use ($testdata, $format) {
-                        Personnummer::parse($testdata[$format], ['allowCoordinationNumber' => false]);
+                        Personnummer::parse($testdata[$format], [
+                            'allowCoordinationNumber' => false,
+                            'allowTNumber' => false,
+                            'allowVgrReserveNumber' => false,
+                            'allowSllReserveNumber' => false,
+                            'allowRvbReserveNumber' => false,
+                        ]);
                     });
-                    $this->assertFalse(Personnummer::valid($testdata[$format], ['allowCoordinationNumber' => false]));
+                    $this->assertFalse(Personnummer::valid($testdata[$format], [
+                        'allowCoordinationNumber' => false,
+                        'allowTNumber' => false,
+                        'allowVgrReserveNumber' => false,
+                        'allowSllReserveNumber' => false,
+                        'allowRvbReserveNumber' => false,
+                    ]));
                 }
             }
         }
 
         for ($i = 0; $i < 2; $i++) {
             $this->assertThrows(PersonnummerException::class, function () use ($i) {
-                new Personnummer(boolval($i));
+                new Personnummer(boolval($i), [
+                    'allowCoordinationNumber' => true,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => false,
+                ]);
             });
 
-            $this->assertFalse(Personnummer::valid(boolval($i)));
+            $this->assertFalse(Personnummer::valid(boolval($i), [
+                'allowCoordinationNumber' => true,
+                'allowTNumber' => false,
+                'allowVgrReserveNumber' => false,
+                'allowSllReserveNumber' => false,
+                'allowRvbReserveNumber' => false,
+            ]));
         }
 
         foreach ([null, []] as $invalidType) {
             $this->assertThrows(TypeError::class, function () use ($invalidType) {
-                new Personnummer($invalidType);
+                new Personnummer($invalidType, [
+                    'allowCoordinationNumber' => true,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => false,
+                ]);
             });
             $this->assertThrows(TypeError::class, function () use ($invalidType) {
-                Personnummer::valid($invalidType);
+                Personnummer::valid($invalidType, [
+                    'allowCoordinationNumber' => true,
+                    'allowTNumber' => false,
+                    'allowVgrReserveNumber' => false,
+                    'allowSllReserveNumber' => false,
+                    'allowRvbReserveNumber' => false,
+                ]);
             });
         }
     }
@@ -323,14 +609,14 @@ class PersonnummerTest extends TestCase
 
     public function testAgeOnBirthday()
     {
-        $date     = (new DateTime())->modify('-30 years midnight');
+        $date = (new DateTime())->modify('-30 years midnight');
         $expected = intval($date->diff(new DateTime())->format('%y'));
 
         $ssn = $date->format('Ymd') . '999';
 
         // Access private luhn method
         $reflector = new ReflectionClass(Personnummer::class);
-        $method    = $reflector->getMethod('luhn');
+        $method = $reflector->getMethod('luhn');
         $method->setAccessible(true);
         $ssn .= $method->invoke(null, substr($ssn, 2));
 
@@ -353,14 +639,14 @@ class PersonnummerTest extends TestCase
     {
         // Parts, as position and length
         $separatedLongParts = [
-            'century'  => [0, 2],
-            'year'     => [2, 2],
+            'century' => [0, 2],
+            'year' => [2, 2],
             'fullYear' => [0, 4],
-            'month'    => [4, 2],
-            'day'      => [6, 2],
-            'sep'      => [8, 1],
-            'num'      => [9, 3],
-            'check'    => [12, 1],
+            'month' => [4, 2],
+            'day' => [6, 2],
+            'sep' => [8, 1],
+            'num' => [9, 3],
+            'check' => [12, 1],
         ];
         foreach (self::$testdataList as $testdata) {
             if ($testdata['valid']) {

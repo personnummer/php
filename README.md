@@ -1,9 +1,21 @@
 # personnummer
 
-Validate Swedish personnummer (civic numbers), samordningsnummer (coordination numbers) and reservnummer (reserve numbers).
+* Validate Swedish personnummer (civic numbers), samordningsnummer (coordination numbers) and reservnummer (reserve numbers).
+* It is important to note that this library provides only validation.
+* Reserve numbers are arbitrarily constructed in different
+ways, but may look alike. **This means that a given reserve number may also identify as another type of reserve number.**
+The helper methods for each individual reserve number type will only indicate that the current reserve number has passed
+validation for that type.
 
-### VGR reserve numbers
-For Västra Götalands region (VGR) there is a special format for reserve numbers used.
+### Different types of reserve numbers
+Different reserve number standards are used in specific Swedish regions and may share
+similarity in their construction.
+
+| Abbreviation | Description                                        |
+| -------------|----------------------------------------------------|
+| VGR          | Västra Götalandsregionen                           |
+| SLL          | Region Stockholm (former Stockholm läns landsting) |
+| RVB          | Region Västerbotten                                |
 
 ## Installation
 
@@ -27,7 +39,10 @@ composer require pinefox/personnummer
 | isFemale             | none            | bool    |
 | isCoordinationNumber | none            | bool    |
 | isReserveNumber      | none            | bool    |
+| isTNumber            | none            | bool    |
 | isVgrReserveNumber   | none            | bool    |
+| isSllReserveNumber   | none            | bool    |
+| isRvbReserveNumber   | none            | bool    |
 
 | Property | Type   | Description                 |
 | ---------|:-------|----------------------------:|
@@ -44,11 +59,13 @@ composer require pinefox/personnummer
 When a personnummer is invalid a PersonnummerException is thrown.
 
 ## Options
-| Option                  | Type | Default | Description                 |
-| ------------------------|:-----|:--------|:---------------------------:|
-| allowCoordinationNumber | bool | true    | Accept coordination numbers |
-| allowReserveNumber      | bool | true    | Accept reserve numbers      |
-| allowVgrReserveNumber   | bool | true    | Accept VGR reserve numbers  |
+| Option                  | Type | Default | Description                                                   |
+| ------------------------|:-----|:--------|:-------------------------------------------------------------:|
+| allowCoordinationNumber | bool | true    | Accept coordination numbers.                                  |
+| allowTNumber            | bool | true    | Accept reserve numbers with single character in 9th position. |
+| allowVgrReserveNumber   | bool | true    | Accept VGR reserve numbers (see specification).               |
+| allowSllReserveNumber   | bool | true    | Accept SLL reserve numbers (see specification).               |
+| allowRvbReserveNumber   | bool | true    | Accept RVB reserve numbers (see specification).               |
 
 ## Examples
 
