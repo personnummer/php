@@ -516,6 +516,10 @@ final class Personnummer implements PersonnummerInterface
      */
     private function parseSllNumber(): bool
     {
+        if (!$this->isSllReserveNumber()) {
+            return false;
+        }
+
         $check = $this->parts['century'] . $this->parts['year'] . $this->parts['num'];
         $validCheck = self::luhn($check) === (int)$this->parts['check'];
         $this->isSllReserve = $validCheck && $this->validateNumPartsForSll();
