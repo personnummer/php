@@ -30,7 +30,7 @@
     "issues": "https://github.com/personnummer/php/issues"
   },
   "require": {
-    "php": ">=7.2"
+    "php": ">=7.3"
   },
   "require-dev": {
     "ext-json": "*",
@@ -61,7 +61,7 @@
   },
   "config": {
     "platform": {
-      "php": "7.2"
+      "php": "7.3"
     }
   }
 }
