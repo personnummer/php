@@ -13,11 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: ['7.2', '7.3', '7.4']
+        php-version: ['7.3', '7.4', '8.0']
         test-command: ['test']
-        include:
-          - php-version: '8.0'
-            test-command: 'unittest'
 
     name: Test PHP ${{ matrix.php-version }}
     steps:
