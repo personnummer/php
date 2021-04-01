@@ -1,16 +1,12 @@
 {
-  "name": "personnummer/personnummer",
+  "name": "pinefox/personnummer",
   "type": "utility",
   "license": "MIT",
   "description": "Validate Swedish social security numbers",
   "authors": [
     {
-      "name": "Fredrik Forsmo",
-      "homepage": "https://github.com/frozzare"
-    },
-    {
-      "name": "Rasmus Bengtsson",
-      "homepage": "https://github.com/rasmusbe"
+      "name": "Johan Frank",
+      "homepage": "https://github.com/pinefox"
     }
   ],
   "keywords": [
@@ -26,9 +22,6 @@
     "co-ordination",
     "coordination"
   ],
-  "support": {
-    "issues": "https://github.com/personnummer/php/issues"
-  },
   "require": {
     "php": ">=7.2"
   },
@@ -39,7 +32,7 @@
     "phpunit/phpunit": "^8.5",
     "phpcompatibility/php-compatibility": "^9.3",
     "dealerdirect/phpcodesniffer-composer-installer": "^0.6.2",
-    "roave/security-advisories": "dev-master"
+    "roave/security-advisories": "dev-latest"
   },
   "autoload": {
     "psr-4": {
