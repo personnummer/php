@@ -543,7 +543,7 @@ final class Personnummer implements PersonnummerInterface
             $this->parts['century'] . $this->parts['year']
         );
 
-        $this->isRvbReserve = $validDate && $this->validateNumPartsForRvb();
+        $this->isRvbReserve = $validDate && $this->reserveNumberCharacter && $this->validateNumPartsForRvb();
 
         return $this->isRvbReserve;
     }
