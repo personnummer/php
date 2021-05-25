@@ -231,8 +231,7 @@ final class Personnummer implements PersonnummerInterface
         $ssn = strtoupper($ssn);
 
         $letters = [
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'T', 'R', 'S', 'U', 'W', 'X', 'J', 'K', 'L', 'M', 'N', 'D'
         ];
 
         foreach ($letters as $letter) {
