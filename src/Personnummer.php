@@ -121,7 +121,7 @@ final class Personnummer implements PersonnummerInterface
     private static function getParts(string $ssn): array
     {
         // phpcs:ignore
-        $reg = '/^(?\'century\'\d{2}){0,1}(?\'year\'\d{2})(?\'month\'\d{2})(?\'day\'\d{2})(?\'sep\'[\+\-\s]?)(?\'num\'(?!000)\d{3})(?\'check\'\d)$/';
+        $reg = '/^(?\'century\'\d{2}){0,1}(?\'year\'\d{2})(?\'month\'\d{2})(?\'day\'\d{2})(?\'sep\'[\+\-]?)(?\'num\'(?!000)\d{3})(?\'check\'\d)$/';
         preg_match($reg, $ssn, $match);
 
         if (empty($match)) {
