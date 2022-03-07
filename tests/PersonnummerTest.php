@@ -29,8 +29,8 @@ class PersonnummerTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::$testdataList = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/list.json'), true); // phpcs:ignore
-        self::$testdataStructured = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/structured.json'), true); // phpcs:ignore
+        self::$testdataList = json_decode(file_get_contents('./data/list.json'), true); // phpcs:ignore
+        self::$testdataStructured = json_decode(file_get_contents('./data/structured.json'), true); // phpcs:ignore
     }
 
     public function testParse()
@@ -424,6 +424,33 @@ class PersonnummerTest extends TestCase
                 ]);
             });
         }
+    }
+
+    public function testReserveNumberCharacterIsInRightPlace()
+    {
+        // Second position, wrong:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('000101-1R13');
+        });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20000101-1R13');
+        });
+
+        // Third position, wrong:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('000101-11R3');
+        });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20000101-11R3');
+        });
+
+        // Fourth position, wrong:
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('000101-112R');
+        });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('20000101-112R');
+        });
     }
 
     public function testParseTNumber()
