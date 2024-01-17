@@ -49,7 +49,7 @@ final class Personnummer implements PersonnummerInterface
         $parts       = $this->parts;
         $genderDigit = substr($parts['num'], -1);
 
-        return boolval($genderDigit % 2);
+        return (bool)($genderDigit % 2);
     }
 
     /**
@@ -98,7 +98,7 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
-        return checkdate(intval($parts['month']), $parts['day'] - 60, $parts['fullYear']);
+        return checkdate((int)$parts['month'], $parts['day'] - 60, $parts['fullYear']);
     }
 
     public static function valid(string $ssn, array $options = []): bool
@@ -132,7 +132,7 @@ final class Personnummer implements PersonnummerInterface
         $parts = array_filter($match, 'is_string', ARRAY_FILTER_USE_KEY);
 
         if (!empty($parts['century'])) {
-            if (date('Y') - intval(strval($parts['century']) . strval($parts['year'])) < 100) {
+            if (date('Y') - (int)((string)$parts['century'] . (string)$parts['year']) < 100) {
                 $parts['sep'] = '-';
             } else {
                 $parts['sep'] = '+';
@@ -163,8 +163,9 @@ final class Personnummer implements PersonnummerInterface
     {
         $sum = 0;
 
-        for ($i = 0; $i < strlen($str); $i++) {
-            $v = intval($str[$i]);
+        $len = strlen($str);
+        for ($i = 0; $i < $len; $i++) {
+            $v = (int)$str[$i];
             $v *= 2 - ($i % 2);
 
             if ($v > 9) {
@@ -174,7 +175,7 @@ final class Personnummer implements PersonnummerInterface
             $sum += $v;
         }
 
-        return intval(ceil($sum / 10) * 10 - $sum);
+        return (int)(ceil($sum / 10) * 10 - $sum);
     }
 
     /**
@@ -206,7 +207,7 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
-        $day = intval($parts['day']);
+        $day = (int)$parts['day'];
         if ($this->isCoordinationNumber()) {
             $day -= 60;
         }
@@ -257,7 +258,7 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
-        $validCheck = self::luhn($checkStr) === intval($parts['check']);
+        $validCheck = self::luhn($checkStr) === (int)$parts['check'];
 
         return $validDate && $validCheck;
     }
