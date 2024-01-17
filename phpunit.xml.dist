@@ -1,21 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php"
-  backupGlobals="false"
-  colors="true"
-  convertErrorsToExceptions="true"
-  convertNoticesToExceptions="true"
-  convertWarningsToExceptions="true"
-  verbose="true"
-  processIsolation="false"
->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" bootstrap="vendor/autoload.php" cacheDirectory=".phpunit.cache">
+  <coverage/>
   <testsuites>
     <testsuite name="Personnummer Test Suite">
-      <directory suffix=".php">./tests/</directory>
+      <directory>./tests/</directory>
     </testsuite>
   </testsuites>
-  <filter>
-    <whitelist addUncoveredFilesFromWhitelist="true">
-      <directory suffix=".php">./src/</directory>
-    </whitelist>
-  </filter>
+  <source>
+    <include>
+      <directory suffix=".php">./src</directory>
+    </include>
+  </source>
 </phpunit>
