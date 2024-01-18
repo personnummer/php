@@ -6,7 +6,7 @@
 
   <!-- Run against the PHPCompatibility ruleset -->
   <rule ref="PHPCompatibility"/>
-  <config name="testVersion" value="8.1-"/>
+  <config name="testVersion" value="8.1"/>
 
   <!-- Run against a second ruleset -->
   <rule ref="PSR12"/>

@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 trait AssertError
 {
-    private $errors;
+    private array $errors;
 
     /**
      * AssertError.
@@ -37,9 +37,10 @@ trait AssertError
         $callable();
         restore_error_handler();
 
-        $comparisons = array_filter(compact('error_type', 'error_msg', 'error_file', 'error_line'), function ($value) {
-            return !is_null($value);
-        });
+        $comparisons = array_filter(
+            compact('error_type', 'error_msg', 'error_file', 'error_line'),
+            static fn ($value) => !is_null($value),
+        );
 
         $matchingErrors = [];
         foreach ($this->errors as $error) {
@@ -51,7 +52,7 @@ trait AssertError
         if (empty($matchingErrors)) {
             $failMessage = 'Expected error was not found';
             $failMessage .= $comparisons ? ': ' : '';
-            $failMessage .= implode(', ', array_map(function ($value, $key) {
+            $failMessage .= implode(', ', array_map(static function ($value, $key) {
                 return $key . ': ' . $value;
             }, $comparisons, array_keys($comparisons)));
 
