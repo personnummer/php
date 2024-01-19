@@ -257,6 +257,7 @@ final class Personnummer implements PersonnummerInterface
     {
         $defaultOptions = [
             'allowCoordinationNumber' => true,
+            'allowInterimNumber' => false,
         ];
 
         if ($unknownKeys = array_diff_key($options, $defaultOptions)) {
