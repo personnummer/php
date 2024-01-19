@@ -15,11 +15,11 @@ class PersonnummerTest extends TestCase
     use AssertThrows;
     use AssertError;
 
-    private static $testdataList;
+    private static array $testdataList;
 
-    private static $testdataStructured;
+    private static array $testdataStructured;
 
-    private static $availableListFormats = [
+    private static array $availableListFormats = [
         'integer',
         'long_format',
         'short_format',
@@ -29,17 +29,17 @@ class PersonnummerTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::$testdataList       = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/list.json'), true); // phpcs:ignore
-        self::$testdataStructured = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/structured.json'), true); // phpcs:ignore
+        self::$testdataList       = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/list.json'), true, 512, JSON_THROW_ON_ERROR); // phpcs:ignore
+        self::$testdataStructured = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/structured.json'), true, 512, JSON_THROW_ON_ERROR); // phpcs:ignore
     }
 
-    public function testParse()
+    public function testParse(): void
     {
         $this->assertSame(Personnummer::class, get_class(Personnummer::parse('1212121212')));
         $this->assertEquals(new Personnummer('1212121212'), Personnummer::parse('1212121212'));
     }
 
-    public function testOptions()
+    public function testOptions(): void
     {
         new Personnummer('1212621211');
 
@@ -51,7 +51,7 @@ class PersonnummerTest extends TestCase
         }, E_USER_WARNING);
     }
 
-    public function testPersonnummerData()
+    public function testPersonnummerData(): void
     {
         foreach (self::$testdataList as $testdata) {
             foreach (self::$availableListFormats as $format) {
@@ -69,7 +69,7 @@ class PersonnummerTest extends TestCase
         }
 
         foreach (self::$testdataStructured as $ssnType => $testdataInputs) {
-            foreach ($testdataInputs as $testdataType => $testdata) {
+            foreach ($testdataInputs as $testdata) {
                 foreach ($testdata as $valid => $ssns) {
                     foreach ($ssns as $ssn) {
                         $this->assertSame(
@@ -87,12 +87,12 @@ class PersonnummerTest extends TestCase
         }
     }
 
-    public function testFormat()
+    public function testFormat(): void
     {
         foreach (self::$testdataList as $testdata) {
             if ($testdata['valid']) {
                 foreach (self::$availableListFormats as $format) {
-                    if ($format === 'short_format' && strpos($testdata['separated_format'], '+') !== false) {
+                    if ($format === 'short_format' && str_contains($testdata['separated_format'], '+')) {
                         continue;
                     }
 
@@ -104,7 +104,7 @@ class PersonnummerTest extends TestCase
         }
     }
 
-    public function testThrowsErrorOnInvalid()
+    public function testThrowsErrorOnInvalid(): void
     {
         foreach (self::$testdataList as $testdata) {
             if (!$testdata['valid']) {
@@ -144,20 +144,20 @@ class PersonnummerTest extends TestCase
         }
     }
 
-    public function testAge()
+    public function testAge(): void
     {
         foreach (self::$testdataList as $testdata) {
             if ($testdata['valid']) {
                 $birthdate = substr($testdata['separated_long'], 0, 8);
                 if ($testdata['type'] === 'con') {
                     $birthdate = substr($birthdate, 0, 6) .
-                        str_pad(intval(substr($birthdate, -2)) - 60, 2, "0", STR_PAD_LEFT);
+                        str_pad((int)substr($birthdate, -2) - 60, 2, "0", STR_PAD_LEFT);
                 }
 
-                $expected = intval((new DateTime($birthdate))->diff(new DateTime())->format('%y'));
+                $expected = (int)(new DateTime($birthdate))->diff(new DateTime())->format('%y');
 
                 foreach (self::$availableListFormats as $format) {
-                    if ($format === 'short_format' && strpos($testdata['separated_format'], '+') !== false) {
+                    if ($format === 'short_format' && str_contains($testdata['separated_format'], '+')) {
                         continue;
                     }
 
@@ -167,10 +167,10 @@ class PersonnummerTest extends TestCase
         }
     }
 
-    public function testAgeOnBirthday()
+    public function testAgeOnBirthday(): void
     {
         $date     = (new DateTime())->modify('-30 years midnight');
-        $expected = intval($date->diff(new DateTime())->format('%y'));
+        $expected = (int)$date->diff(new DateTime())->format('%y');
 
         $ssn = $date->format('Ymd') . '999';
 
@@ -183,7 +183,7 @@ class PersonnummerTest extends TestCase
         $this->assertSame($expected, Personnummer::parse($ssn)->getAge());
     }
 
-    public function testSex()
+    public function testSex(): void
     {
         foreach (self::$testdataList as $testdata) {
             if ($testdata['valid']) {
@@ -195,7 +195,7 @@ class PersonnummerTest extends TestCase
         }
     }
 
-    public function testProperties()
+    public function testProperties(): void
     {
         // Parts, as position and length
         $separatedLongParts = [
@@ -220,7 +220,7 @@ class PersonnummerTest extends TestCase
         }
     }
 
-    public function testMissingProperties()
+    public function testMissingProperties(): void
     {
         $this->assertError(function () {
             Personnummer::parse('1212121212')->missingProperty;

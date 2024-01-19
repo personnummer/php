@@ -21,18 +21,12 @@ use Exception;
  */
 final class Personnummer implements PersonnummerInterface
 {
-    private $parts;
+    private array $parts;
 
-    private $options;
+    private array $options;
 
     /**
-     *
-     * @param string $ssn
-     * @param array  $options
-     *
-     * @return PersonnummerInterface
-     *
-     * @throws PersonnummerException
+     * @inheritDoc
      */
     public static function parse(string $ssn, array $options = []): PersonnummerInterface
     {
@@ -40,22 +34,19 @@ final class Personnummer implements PersonnummerInterface
     }
 
     /**
-     * Check if a Swedish social security number is for a male.
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function isMale(): bool
     {
         $parts       = $this->parts;
         $genderDigit = substr($parts['num'], -1);
 
-        return boolval($genderDigit % 2);
+        return (bool)($genderDigit % 2);
     }
 
+
     /**
-     * Check if a Swedish social security number is for a female.
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function isFemale(): bool
     {
@@ -63,14 +54,7 @@ final class Personnummer implements PersonnummerInterface
     }
 
     /**
-     * Format a Swedish social security/coordination number as one of the official formats,
-     * A long format or a short format.
-     *
-     * If the input number could not be parsed an empty string will be returned.
-     *
-     * @param bool $longFormat short format YYMMDD-XXXX or long YYYYMMDDXXXX since the tax office says both are official
-     *
-     * @return string
+     * @inheritDoc
      */
     public function format(bool $longFormat = false): string
     {
@@ -94,18 +78,24 @@ final class Personnummer implements PersonnummerInterface
         );
     }
 
+    /**
+     * @inheritDoc
+     */
     public function isCoordinationNumber(): bool
     {
         $parts = $this->parts;
 
-        return checkdate(intval($parts['month']), $parts['day'] - 60, $parts['fullYear']);
+        return checkdate((int)$parts['month'], $parts['day'] - 60, $parts['fullYear']);
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function valid(string $ssn, array $options = []): bool
     {
         try {
             return self::parse($ssn, $options)->isValid();
-        } catch (PersonnummerException $exception) {
+        } catch (PersonnummerException) {
             return false;
         }
     }
@@ -132,7 +122,7 @@ final class Personnummer implements PersonnummerInterface
         $parts = array_filter($match, 'is_string', ARRAY_FILTER_USE_KEY);
 
         if (!empty($parts['century'])) {
-            if (date('Y') - intval(strval($parts['century']) . strval($parts['year'])) < 100) {
+            if (date('Y') - (int)((string)$parts['century'] . (string)$parts['year']) < 100) {
                 $parts['sep'] = '-';
             } else {
                 $parts['sep'] = '+';
@@ -163,8 +153,9 @@ final class Personnummer implements PersonnummerInterface
     {
         $sum = 0;
 
-        for ($i = 0; $i < strlen($str); $i++) {
-            $v = intval($str[$i]);
+        $len = strlen($str);
+        for ($i = 0; $i < $len; $i++) {
+            $v = (int)$str[$i];
             $v *= 2 - ($i % 2);
 
             if ($v > 9) {
@@ -174,7 +165,7 @@ final class Personnummer implements PersonnummerInterface
             $sum += $v;
         }
 
-        return intval(ceil($sum / 10) * 10 - $sum);
+        return (int)(ceil($sum / 10) * 10 - $sum);
     }
 
     /**
@@ -206,7 +197,7 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
-        $day = intval($parts['day']);
+        $day = (int)$parts['day'];
         if ($this->isCoordinationNumber()) {
             $day -= 60;
         }
@@ -257,7 +248,7 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
-        $validCheck = self::luhn($checkStr) === intval($parts['check']);
+        $validCheck = self::luhn($checkStr) === (int)$parts['check'];
 
         return $validDate && $validCheck;
     }
