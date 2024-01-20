@@ -111,7 +111,7 @@ final class Personnummer implements PersonnummerInterface
     private static function getParts(string $ssn): array
     {
         // phpcs:ignore
-        $reg = '/^(?\'century\'\d{2}){0,1}(?\'year\'\d{2})(?\'month\'\d{2})(?\'day\'\d{2})(?\'sep\'[\+\-]?)(?\'num\'(?!000)\d{3})(?\'check\'\d)$/';
+        $reg = '/^(?\'century\'\d{2}){0,1}(?\'year\'\d{2})(?\'month\'\d{2})(?\'day\'\d{2})(?\'sep\'[\+\-]?)(?\'num\'(?!000)\d{3}|[TRSUWXJKLMN]\d{2})(?\'check\'\d)$/';
         preg_match($reg, $ssn, $match);
 
         if (empty($match)) {
@@ -139,6 +139,7 @@ final class Personnummer implements PersonnummerInterface
 
         $parts['fullYear'] = $parts['century'] . $parts['year'];
 
+        $parts['original'] = $ssn;
         return $parts;
     }
 
@@ -241,13 +242,29 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
+        // Correct interim if allowed.
+        $interimTest = '/(?![-+])\D/';
+        $isInterim = preg_match($interimTest, $parts['original']) !== 0;
+
+        if ($this->options['allowInterimNumber'] === false && $isInterim) {
+            throw new PersonnummerException(sprintf(
+                '%s contains non-integer characters and options are set to not allow interim numbers',
+                $parts['original']
+            ));
+        }
+
+        $num = $parts['num'];
+        if ($this->options['allowInterimNumber'] && $isInterim) {
+            $num = preg_replace($interimTest, '1', $num);
+        }
+
         if ($this->options['allowCoordinationNumber'] && $this->isCoordinationNumber()) {
             $validDate = true;
         } else {
             $validDate = checkdate($parts['month'], $parts['day'], $parts['century'] . $parts['year']);
         }
 
-        $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
+        $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $num;
         $validCheck = self::luhn($checkStr) === (int)$parts['check'];
 
         return $validDate && $validCheck;
