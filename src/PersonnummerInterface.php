@@ -2,6 +2,7 @@
 
 namespace Personnummer;
 
+use DateTime;
 use Exception;
 
 /**
@@ -89,4 +90,11 @@ interface PersonnummerInterface
      * @throws Exception When date is invalid or problems with DateTime library
      */
     public function getAge(): int;
+
+    /**
+     * Get the date part of the personnummer as a DateTime object.
+     *
+     * @return DateTime
+     */
+    public function getDate(): DateTime;
 }

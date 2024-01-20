@@ -148,7 +148,6 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $parts['fullYear'] = $parts['century'] . $parts['year'];
-
         $parts['original'] = $ssn;
         return $parts;
     }
@@ -228,6 +227,14 @@ final class Personnummer implements PersonnummerInterface
         $birthday = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
 
         return (new DateTime())->diff($birthday)->y;
+    }
+
+    public function getDate(): DateTime
+    {
+        return DateTime::createFromFormat(
+            'Ymd',
+            $this->parts['fullYear'] .$this->parts['month'] . $this->parts['realDay']
+        );
     }
 
     public function __get(string $name)
