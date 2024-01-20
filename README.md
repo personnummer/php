@@ -17,12 +17,13 @@ composer require personnummer/personnummer
 
 #### Instance
 | Method               | Arguments       | Returns |
-| ---------------------|:----------------|--------:|
+|----------------------|:----------------|--------:|
 | format               | bool longFormat | string  |
 | getAge               | none            | int     |
 | isMale               | none            | bool    |
 | isFemale             | none            | bool    |
 | isCoordinationNumber | none            | bool    |
+| isInterimNumber      | none            | bool    |
 
 | Property | Type   | Description                 |
 | ---------|:-------|----------------------------:|
@@ -39,9 +40,10 @@ composer require personnummer/personnummer
 When a personnummer is invalid a PersonnummerException is thrown.
 
 ## Options
-| Option                  | Type | Default | Description                 |
-| ------------------------|:-----|:--------|:---------------------------:|
+| Option                  | Type | Default |         Description         |
+|-------------------------|:-----|:--------|:---------------------------:|
 | allowCoordinationNumber | bool | true    | Accept coordination numbers |
+| allowInterimNumber      | bool | false   |  Accept interim/T numbers  |
 
 ## Examples
 
