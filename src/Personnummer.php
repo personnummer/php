@@ -182,6 +182,18 @@ final class Personnummer implements PersonnummerInterface
         $this->options = $this->parseOptions($options);
         $this->parts   = self::getParts($ssn);
 
+        // Sanity checks.
+        $ssn = trim($ssn);
+        $len = strlen($ssn);
+        if ($len > 13 || $len < 10) {
+            throw new PersonnummerException(
+                sprintf(
+                    'Input string too %s',
+                    $len < 10 ? 'short' : 'long'
+                )
+            );
+        }
+
         if (!$this->isValid()) {
             throw new PersonnummerException();
         }
