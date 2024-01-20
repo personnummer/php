@@ -148,6 +148,7 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $parts['fullYear'] = $parts['century'] . $parts['year'];
+        $parts['realDay']  = $parts['day'] > 60 ? $parts['day'] - 60 : $parts['day'];
         $parts['original'] = $ssn;
         return $parts;
     }
@@ -233,7 +234,7 @@ final class Personnummer implements PersonnummerInterface
     {
         return DateTime::createFromFormat(
             'Ymd',
-            $this->parts['fullYear'] .$this->parts['month'] . $this->parts['realDay']
+            $this->parts['fullYear'] . $this->parts['month'] . $this->parts['realDay']
         );
     }
 

@@ -16,14 +16,15 @@ composer require personnummer/personnummer
 | valid  | string personnummer, [ array options<sup>[*](#options)</sup> ] | bool     |
 
 #### Instance
-| Method               | Arguments       | Returns |
-|----------------------|:----------------|--------:|
-| format               | bool longFormat | string  |
-| getAge               | none            | int     |
-| isMale               | none            | bool    |
-| isFemale             | none            | bool    |
-| isCoordinationNumber | none            | bool    |
-| isInterimNumber      | none            | bool    |
+| Method               | Arguments       |  Returns |
+|----------------------|:----------------|---------:|
+| format               | bool longFormat |   string |
+| getAge               | none            |      int |
+| isMale               | none            |     bool |
+| isFemale             | none            |     bool |
+| isCoordinationNumber | none            |     bool |
+| isInterimNumber      | none            |     bool |
+| getDate              | none            | DateTime |
 
 | Property | Type   | Description                 |
 | ---------|:-------|----------------------------:|
@@ -43,7 +44,7 @@ When a personnummer is invalid a PersonnummerException is thrown.
 | Option                  | Type | Default |         Description         |
 |-------------------------|:-----|:--------|:---------------------------:|
 | allowCoordinationNumber | bool | true    | Accept coordination numbers |
-| allowInterimNumber      | bool | false   |  Accept interim/T numbers  |
+| allowInterimNumber      | bool | false   | Accept interim/T numbers    |
 
 ## Examples
 
