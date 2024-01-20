@@ -25,6 +25,8 @@ final class Personnummer implements PersonnummerInterface
 
     private array $options;
 
+    private bool $isInterim;
+
     /**
      * @inheritDoc
      */
@@ -86,6 +88,14 @@ final class Personnummer implements PersonnummerInterface
         $parts = $this->parts;
 
         return checkdate((int)$parts['month'], $parts['day'] - 60, $parts['fullYear']);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isInterimNumber(): bool
+    {
+        return $this->isInterim;
     }
 
     /**
@@ -256,9 +266,9 @@ final class Personnummer implements PersonnummerInterface
 
         // Correct interim if allowed.
         $interimTest = '/(?![-+])\D/';
-        $isInterim = preg_match($interimTest, $parts['original']) !== 0;
+        $this->isInterim = preg_match($interimTest, $parts['original']) !== 0;
 
-        if ($this->options['allowInterimNumber'] === false && $isInterim) {
+        if ($this->options['allowInterimNumber'] === false && $this->isInterim) {
             throw new PersonnummerException(sprintf(
                 '%s contains non-integer characters and options are set to not allow interim numbers',
                 $parts['original']
@@ -266,7 +276,7 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $num = $parts['num'];
-        if ($this->options['allowInterimNumber'] && $isInterim) {
+        if ($this->options['allowInterimNumber'] && $this->isInterim) {
             $num = preg_replace($interimTest, '1', $num);
         }
 

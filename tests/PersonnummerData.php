@@ -1,4 +1,5 @@
 <?php
+
 namespace Personnummer\Tests;
 
 class PersonnummerData
@@ -14,7 +15,6 @@ class PersonnummerData
         $this->isMale = $p['isMale'];
         $this->isFemale = $p['isFemale'];
     }
-
     public string $longFormat;
     public string $shortFormat;
     public string $separatedFormat;

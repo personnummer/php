@@ -227,4 +227,13 @@ class PersonnummerTest extends TestCase
         }, E_USER_NOTICE);
         $this->assertFalse(isset(Personnummer::parse('121212-1212')->missingProperty));
     }
+
+    public function testIsNotInterim(): void
+    {
+        foreach (self::$testdataList as $testdata) {
+            if ($testdata['valid']) {
+                $this->assertFalse(Personnummer::parse($testdata['separated_format'])->isInterimNumber());
+            }
+        }
+    }
 }

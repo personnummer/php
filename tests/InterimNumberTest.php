@@ -61,6 +61,13 @@ class InterimNumberTest extends TestCase
     }
 
     #[DataProvider('validProvider')]
+    public function testIsInterim(PersonnummerData $num): void
+    {
+        self::assertTrue(Personnummer::parse($num->longFormat, $this->options)->isInterimNumber());
+        self::assertTrue(Personnummer::parse($num->separatedFormat, $this->options)->isInterimNumber());
+    }
+
+    #[DataProvider('validProvider')]
     public function testFormatLongInterim(PersonnummerData $num): void
     {
         $p = Personnummer::parse($num->longFormat, $this->options);
