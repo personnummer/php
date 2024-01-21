@@ -236,4 +236,29 @@ class PersonnummerTest extends TestCase
             }
         }
     }
+
+    public function testDate(): void
+    {
+        foreach (self::$testdataList as $testdata) {
+            if (!$testdata['valid']) {
+                continue;
+            }
+
+            $val = $testdata['long_format'];
+            if ($testdata['type'] === 'con') {
+                // If it's a coordination number, we aught to remove 60 from the "real day" to make sure
+                // we get the correct date.
+                $val = substr($testdata['long_format'], 0, 6); // YYMM
+                $val .= (int)substr($testdata['long_format'], 6, 2) - 60; // DD
+            }
+
+            $pn   = Personnummer::parse($testdata['separated_format']);
+            $date = DateTime::createFromFormat('Ymd', substr($val, 0, 8)); // Only want YYYYMMDD
+
+            self::assertSame(
+                $pn->getDate()->format("Ymd"),
+                $date->format('Ymd')
+            );
+        }
+    }
 }
