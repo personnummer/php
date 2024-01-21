@@ -1,4 +1,4 @@
 name: "PHP"
 maintainer: "@rasmusbe"
-spec: 3.0
+spec: 3.1
 workflow: "php.yml"
