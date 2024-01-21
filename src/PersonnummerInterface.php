@@ -72,6 +72,13 @@ interface PersonnummerInterface
      */
     public function isCoordinationNumber(): bool;
 
+    /**
+     * Check if the Swedish social security number is an interim number.
+     *
+     * @return bool
+     */
+    public function isInterimNumber(): bool;
+
     public function __construct(string $ssn, array $options = []);
 
     /**

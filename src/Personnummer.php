@@ -25,6 +25,8 @@ final class Personnummer implements PersonnummerInterface
 
     private array $options;
 
+    private bool $isInterim;
+
     /**
      * @inheritDoc
      */
@@ -91,6 +93,14 @@ final class Personnummer implements PersonnummerInterface
     /**
      * @inheritDoc
      */
+    public function isInterimNumber(): bool
+    {
+        return $this->isInterim;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public static function valid(string $ssn, array $options = []): bool
     {
         try {
@@ -111,7 +121,7 @@ final class Personnummer implements PersonnummerInterface
     private static function getParts(string $ssn): array
     {
         // phpcs:ignore
-        $reg = '/^(?\'century\'\d{2}){0,1}(?\'year\'\d{2})(?\'month\'\d{2})(?\'day\'\d{2})(?\'sep\'[\+\-]?)(?\'num\'(?!000)\d{3})(?\'check\'\d)$/';
+        $reg = '/^(?\'century\'\d{2}){0,1}(?\'year\'\d{2})(?\'month\'\d{2})(?\'day\'\d{2})(?\'sep\'[\+\-]?)(?\'num\'(?!000)\d{3}|[TRSUWXJKLMN]\d{2})(?\'check\'\d)$/';
         preg_match($reg, $ssn, $match);
 
         if (empty($match)) {
@@ -139,6 +149,7 @@ final class Personnummer implements PersonnummerInterface
 
         $parts['fullYear'] = $parts['century'] . $parts['year'];
 
+        $parts['original'] = $ssn;
         return $parts;
     }
 
@@ -180,6 +191,18 @@ final class Personnummer implements PersonnummerInterface
     {
         $this->options = $this->parseOptions($options);
         $this->parts   = self::getParts($ssn);
+
+        // Sanity checks.
+        $ssn = trim($ssn);
+        $len = strlen($ssn);
+        if ($len > 13 || $len < 10) {
+            throw new PersonnummerException(
+                sprintf(
+                    'Input string too %s',
+                    $len < 10 ? 'short' : 'long'
+                )
+            );
+        }
 
         if (!$this->isValid()) {
             throw new PersonnummerException();
@@ -241,13 +264,29 @@ final class Personnummer implements PersonnummerInterface
     {
         $parts = $this->parts;
 
+        // Correct interim if allowed.
+        $interimTest = '/(?![-+])\D/';
+        $this->isInterim = preg_match($interimTest, $parts['original']) !== 0;
+
+        if ($this->options['allowInterimNumber'] === false && $this->isInterim) {
+            throw new PersonnummerException(sprintf(
+                '%s contains non-integer characters and options are set to not allow interim numbers',
+                $parts['original']
+            ));
+        }
+
+        $num = $parts['num'];
+        if ($this->options['allowInterimNumber'] && $this->isInterim) {
+            $num = preg_replace($interimTest, '1', $num);
+        }
+
         if ($this->options['allowCoordinationNumber'] && $this->isCoordinationNumber()) {
             $validDate = true;
         } else {
             $validDate = checkdate($parts['month'], $parts['day'], $parts['century'] . $parts['year']);
         }
 
-        $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $parts['num'];
+        $checkStr   = $parts['year'] . $parts['month'] . $parts['day'] . $num;
         $validCheck = self::luhn($checkStr) === (int)$parts['check'];
 
         return $validDate && $validCheck;
@@ -257,6 +296,7 @@ final class Personnummer implements PersonnummerInterface
     {
         $defaultOptions = [
             'allowCoordinationNumber' => true,
+            'allowInterimNumber' => false,
         ];
 
         if ($unknownKeys = array_diff_key($options, $defaultOptions)) {
