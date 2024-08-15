@@ -9,9 +9,9 @@ class PersonnummerException extends Exception
     /**
      * PersonnummerException constructor.
      *
-     * @param string         $message
-     * @param integer        $code
-     * @param null|Exception $previous
+     * @param  string  $message
+     * @param  int  $code
+     * @param  null|Exception  $previous
      */
     public function __construct(
         $message = 'Invalid swedish social security number',
