@@ -193,7 +193,7 @@ final class Personnummer implements PersonnummerInterface
     public function __construct(string $ssn, array $options = [])
     {
         $this->options = $this->parseOptions($options);
-        $this->clock = $this->options['clock'];
+        $this->clock   = $this->options['clock'];
         $this->parts   = self::getParts($ssn);
 
         // Sanity checks.

@@ -41,10 +41,11 @@ composer require personnummer/personnummer
 When a personnummer is invalid a PersonnummerException is thrown.
 
 ## Options
-| Option                  | Type | Default |         Description         |
-|-------------------------|:-----|:--------|:---------------------------:|
-| allowCoordinationNumber | bool | true    | Accept coordination numbers |
-| allowInterimNumber      | bool | false   | Accept interim/T numbers    |
+| Option                  | Type                     | Default                 | Description                       |
+|-------------------------|:-------------------------|:------------------------|:----------------------------------|
+| allowCoordinationNumber | bool                     | true                    | Accept coordination numbers       |
+| allowInterimNumber      | bool                     | false                   | Accept interim/T numbers          |
+| clock                   | Psr\Clock\ClockInterface | Personummer\SystemClock | Clock used for time calculations  |
 
 ## Examples
 
