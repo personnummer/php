@@ -167,6 +167,22 @@ class PersonnummerTest extends TestCase
         }
     }
 
+    public function testAgeFuture(): void
+    {
+        $clock = new TestClock(new \DateTimeImmutable("2020-01-01 12:00"));
+
+        $tests = [
+            ['ssn' => 203501010718, 'age' => -14],
+            ['ssn' => 204501018131, 'age' => -24],
+            ['ssn' => 213501014330, 'age' => -214]
+         ];
+
+        foreach ($tests as $test) {
+            $ssn = Personnummer::parse($test['ssn'], ['clock' => $clock]);
+            self::assertSame($test['age'], $ssn->getAge());
+        }
+    }
+
     public function testAgeOnBirthday(): void
     {
         $date     = (new DateTime())->modify('-30 years midnight');
