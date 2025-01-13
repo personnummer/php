@@ -4,6 +4,7 @@ namespace Personnummer;
 
 use DateTime;
 use Exception;
+use Psr\Clock\ClockInterface;
 
 /**
  * Class Personnummer
@@ -24,6 +25,8 @@ final class Personnummer implements PersonnummerInterface
     private array $parts;
 
     private array $options;
+
+    private ClockInterface $clock;
 
     private bool $isInterim;
 
@@ -190,6 +193,7 @@ final class Personnummer implements PersonnummerInterface
     public function __construct(string $ssn, array $options = [])
     {
         $this->options = $this->parseOptions($options);
+        $this->clock = $this->options['clock'];
         $this->parts   = self::getParts($ssn);
 
         // Sanity checks.
@@ -226,8 +230,7 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $birthday = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
-
-        return (new DateTime())->diff($birthday)->y;
+        return $this->clock->now()->diff($birthday)->y;
     }
 
     public function getDate(): DateTime
@@ -305,6 +308,7 @@ final class Personnummer implements PersonnummerInterface
         $defaultOptions = [
             'allowCoordinationNumber' => true,
             'allowInterimNumber' => false,
+            'clock' => new SystemClock(),
         ];
 
         if ($unknownKeys = array_diff_key($options, $defaultOptions)) {
