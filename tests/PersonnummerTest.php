@@ -174,7 +174,7 @@ class PersonnummerTest extends TestCase
         $tests = [
             ['ssn' => 203501010718, 'age' => -14],
             ['ssn' => 204501018131, 'age' => -24],
-            ['ssn' => 213501014330, 'age' => -214]
+            ['ssn' => 213501014330, 'age' => -114]
          ];
 
         foreach ($tests as $test) {

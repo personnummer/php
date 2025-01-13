@@ -230,7 +230,8 @@ final class Personnummer implements PersonnummerInterface
         }
 
         $birthday = new DateTime(sprintf('%s%s-%s-%d', $parts['century'], $parts['year'], $parts['month'], $day));
-        return $this->clock->now()->diff($birthday)->y;
+        $diff = $birthday->diff($this->clock->now());
+        return $diff->invert === 0 ? $diff->y : -$diff->y;
     }
 
     public function getDate(): DateTime
