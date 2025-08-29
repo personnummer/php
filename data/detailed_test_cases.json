@@ -121,18 +121,6 @@
   },
   {
     "type": "personalIdentityNumber",
-    "birthDate": "1879-12-21",
-    "integer": 187912219990,
-    "long_format": "187912219990",
-    "short_format": "7912219990",
-    "separated_format": "791221+9990",
-    "separated_long": "18791221+9990",
-    "valid": true,
-    "isMale": true,
-    "isFemale": false
-  },
-  {
-    "type": "personalIdentityNumber",
     "birthDate": "2000-12-09",
     "integer": 200012099891,
     "long_format": "200012099891",

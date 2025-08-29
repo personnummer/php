@@ -73,6 +73,15 @@ final class Personnummer implements PersonnummerInterface
             $this->isSllReserve = true;
             $this->parts = $this->getSllParts($identificationNumber);
         } else {
+            // Check if this is a 12-digit number with invalid century
+            // Valid Swedish PINs in 12-digit format must start with 19 (1900s) or 20 (2000s)
+            if (
+                strlen($identificationNumber) === 12 &&
+                !in_array(substr($identificationNumber, 0, 2), ['19', '20'], true)
+            ) {
+                throw new PersonnummerException();
+            }
+            
             if ($this->options['allowPersonalIdentityNumber']) {
                 $identificationNumber = $this->checkIfReserveNumber($identificationNumber);
                 $this->parts = $this->getParts($identificationNumber);
