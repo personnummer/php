@@ -34,6 +34,7 @@ class PersonnummerTest extends TestCase
         'allowSllReserveNumber' => false,
         'allowRvbReserveNumber' => false,
         'allowNorwegianBirthNumber' => false,
+        'allowDanishCprNumber' => false,
     ];
 
     public static function setUpBeforeClass(): void
@@ -71,6 +72,9 @@ class PersonnummerTest extends TestCase
         $this->assertThrows(PersonnummerException::class, function () {
             new Personnummer('820202-R620', ['allowRvbReserveNumber' => false]);
         });
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('010100-1234', ['allowDanishCprNumber' => false]);
+        });
         $this->assertError(function () {
             new Personnummer('1212121212', ['invalidOption' => true]);
         }, E_USER_WARNING);
@@ -80,14 +84,24 @@ class PersonnummerTest extends TestCase
     {
         foreach (self::$testdataList as $testdata) {
             foreach (self::$availableListFormats as $format) {
+                // Skip integer format for reserve numbers with letters (they can't be represented as integers)
+                if (
+                    $format === 'integer' && $testdata['integer'] === 0 &&
+                    in_array($testdata['type'], ['vgrReserveNumber', 'rvbReserveNumber'])
+                ) {
+                    continue;
+                }
+
                 $this->assertSame(
                     $testdata['valid'],
                     Personnummer::valid($testdata[$format], [
                         'allowCoordinationNumber' => true,
                         'allowTNumber' => false,
-                        'allowVgrReserveNumber' => false,
-                        'allowSllReserveNumber' => false,
-                        'allowRvbReserveNumber' => false,
+                        'allowVgrReserveNumber' => $testdata['type'] === 'vgrReserveNumber',
+                        'allowSllReserveNumber' => $testdata['type'] === 'sllReserveNumber',
+                        'allowRvbReserveNumber' => $testdata['type'] === 'rvbReserveNumber',
+                        'allowDanishCprNumber' => false,
+                        'allowNorwegianBirthNumber' => $testdata['type'] === 'norwegianBirthNumber',
                     ]),
                     sprintf(
                         '%s (%s) should be %s',
@@ -100,22 +114,28 @@ class PersonnummerTest extends TestCase
         }
 
         foreach (self::$testdataStructured as $ssnType => $testdataInputs) {
+            // Skip non-Swedish formats in this Swedish-focused test
+            if (in_array($ssnType, ['danishCpr', 'norwegianBirthNumber'])) {
+                continue;
+            }
+
             foreach ($testdataInputs as $testdataType => $testdata) {
                 foreach ($testdata as $valid => $ssns) {
                     foreach ($ssns as $ssn) {
                         $this->assertSame(
-                            $valid === 'valid' && $ssnType === 'ssn',
+                            $valid === 'valid' && $ssnType === 'personalIdentityNumber',
                             Personnummer::valid($ssn, [
                                 'allowCoordinationNumber' => false,
                                 'allowTNumber' => false,
                                 'allowVgrReserveNumber' => false,
                                 'allowSllReserveNumber' => false,
                                 'allowRvbReserveNumber' => false,
+                                'allowDanishCprNumber' => false,
                             ]),
                             sprintf(
                                 '%s should be %s',
                                 $ssn,
-                                ($valid === 'valid' && $ssnType === 'ssn' ? 'valid' : 'not valid')
+                                ($valid === 'valid' && $ssnType === 'personalIdentityNumber' ? 'valid' : 'not valid')
                             )
                         );
                     }
@@ -130,6 +150,14 @@ class PersonnummerTest extends TestCase
             if ($testdata['valid']) {
                 foreach (self::$availableListFormats as $format) {
                     if ($format === 'short_format' && strpos($testdata['separated_format'], '+') !== false) {
+                        continue;
+                    }
+
+                    // Skip integer format for reserve numbers with letters
+                    if (
+                        $format === 'integer' && $testdata['integer'] === 0 &&
+                        in_array($testdata['type'], ['vgrReserveNumber', 'rvbReserveNumber'])
+                    ) {
                         continue;
                     }
 
@@ -153,6 +181,7 @@ class PersonnummerTest extends TestCase
                             'allowVgrReserveNumber' => false,
                             'allowSllReserveNumber' => false,
                             'allowRvbReserveNumber' => false,
+                            'allowDanishCprNumber' => false,
                         ]);
                     });
                     $this->assertFalse(Personnummer::valid($testdata[$format], [
@@ -161,11 +190,12 @@ class PersonnummerTest extends TestCase
                         'allowVgrReserveNumber' => false,
                         'allowSllReserveNumber' => false,
                         'allowRvbReserveNumber' => false,
+                        'allowDanishCprNumber' => false,
                     ]));
                 }
             }
 
-            if ($testdata['type'] === 'con') {
+            if ($testdata['type'] === 'coordinationNumber') {
                 foreach (self::$availableListFormats as $format) {
                     $this->assertThrows(PersonnummerException::class, function () use ($testdata, $format) {
                         Personnummer::parse($testdata[$format], [
@@ -174,6 +204,7 @@ class PersonnummerTest extends TestCase
                             'allowVgrReserveNumber' => false,
                             'allowSllReserveNumber' => false,
                             'allowRvbReserveNumber' => false,
+                            'allowDanishCprNumber' => false,
                         ]);
                     });
                     $this->assertFalse(Personnummer::valid($testdata[$format], [
@@ -182,6 +213,7 @@ class PersonnummerTest extends TestCase
                         'allowVgrReserveNumber' => false,
                         'allowSllReserveNumber' => false,
                         'allowRvbReserveNumber' => false,
+                        'allowDanishCprNumber' => false,
                     ]));
                 }
             }
@@ -233,16 +265,34 @@ class PersonnummerTest extends TestCase
     {
         foreach (self::$testdataList as $testdata) {
             if ($testdata['valid']) {
-                $birthdate = substr($testdata['separated_long'], 0, 8);
-                if ($testdata['type'] === 'con') {
-                    $birthdate = substr($birthdate, 0, 6).
-                        str_pad(intval(substr($birthdate, -2)) - 60, 2, '0', STR_PAD_LEFT);
+                if (
+                    in_array(
+                        $testdata['type'],
+                        ['norwegianBirthNumber', 'vgrReserveNumber', 'rvbReserveNumber', 'sllReserveNumber']
+                    )
+                ) {
+                    // These types have different internal structures or date formats
+                    continue; // Skip age test for reserve numbers and Norwegian birth numbers
+                } else {
+                    $birthdate = substr($testdata['separated_long'], 0, 8);
+                    if ($testdata['type'] === 'coordinationNumber') {
+                        $birthdate = substr($birthdate, 0, 6) .
+                            str_pad(intval(substr($birthdate, -2)) - 60, 2, '0', STR_PAD_LEFT);
+                    }
                 }
 
                 $expected = intval((new DateTime($birthdate))->diff(new DateTime())->format('%y'));
 
                 foreach (self::$availableListFormats as $format) {
                     if ($format === 'short_format' && strpos($testdata['separated_format'], '+') !== false) {
+                        continue;
+                    }
+
+                    // Skip integer format for reserve numbers with letters
+                    if (
+                        $format === 'integer' && $testdata['integer'] === 0 &&
+                        in_array($testdata['type'], ['vgrReserveNumber', 'rvbReserveNumber'])
+                    ) {
                         continue;
                     }
 
@@ -257,7 +307,7 @@ class PersonnummerTest extends TestCase
         $date = (new DateTime())->modify('-30 years midnight');
         $expected = intval($date->diff(new DateTime())->format('%y'));
 
-        $ssn = $date->format('Ymd').'999';
+        $ssn = $date->format('Ymd') . '999';
 
         // Access private luhn method
         $reflector = new ReflectionClass(Personnummer::class);
@@ -273,6 +323,14 @@ class PersonnummerTest extends TestCase
         foreach (self::$testdataList as $testdata) {
             if ($testdata['valid']) {
                 foreach (self::$availableListFormats as $format) {
+                    // Skip integer format for reserve numbers with letters
+                    if (
+                        $format === 'integer' && $testdata['integer'] === 0 &&
+                        in_array($testdata['type'], ['vgrReserveNumber', 'rvbReserveNumber'])
+                    ) {
+                        continue;
+                    }
+
                     $this->assertSame($testdata['isMale'], Personnummer::parse($testdata[$format])->isMale());
                     $this->assertSame($testdata['isFemale'], Personnummer::parse($testdata[$format])->isFemale());
                 }
@@ -295,11 +353,27 @@ class PersonnummerTest extends TestCase
         ];
         foreach (self::$testdataList as $testdata) {
             if ($testdata['valid']) {
-                foreach ($separatedLongParts as $partName => $pos) {
-                    $expected = call_user_func_array('substr', array_merge([$testdata['separated_long']], $pos));
-                    $this->assertSame($expected, Personnummer::parse($testdata['separated_format'])->$partName);
-                    $this->assertSame($expected, Personnummer::parse($testdata['separated_format'])->__get($partName));
-                    $this->assertTrue(isset(Personnummer::parse($testdata['separated_format'])->$partName));
+                if (
+                    in_array(
+                        $testdata['type'],
+                        ['norwegianBirthNumber', 'vgrReserveNumber', 'rvbReserveNumber', 'sllReserveNumber']
+                    )
+                ) {
+                    // These types have different internal structures
+                    continue; // Skip properties test for reserve numbers and Norwegian birth numbers
+                } else {
+                    foreach ($separatedLongParts as $partName => $pos) {
+                        $expected = call_user_func_array(
+                            'substr',
+                            array_merge([$testdata['separated_long']], $pos)
+                        );
+                        $this->assertSame($expected, Personnummer::parse($testdata['separated_format'])->$partName);
+                        $this->assertSame(
+                            $expected,
+                            Personnummer::parse($testdata['separated_format'])->__get($partName)
+                        );
+                        $this->assertTrue(isset(Personnummer::parse($testdata['separated_format'])->$partName));
+                    }
                 }
             }
         }
@@ -387,10 +461,10 @@ class PersonnummerTest extends TestCase
 
         // Wrong gender letter (male):
         $this->assertThrows(PersonnummerException::class, function () {
-            new Personnummer('19561110-M064', [
-                ...self::$options,
-                'allowVgrReserveNumber' => true,
-            ]);
+            new Personnummer('19561110-M064', array_merge(
+                self::$options,
+                ['allowVgrReserveNumber' => true]
+            ));
         });
 
         // Wrong gender letter (unknown):
@@ -548,10 +622,10 @@ class PersonnummerTest extends TestCase
 
         // SLL number from 1965
         $this->assertNotThrows(PersonnummerException::class, function () {
-            new Personnummer('991965950320', [
-                ...self::$options,
-                'allowSllReserveNumber' => true,
-            ]);
+            new Personnummer('991965950320', array_merge(
+                self::$options,
+                ['allowSllReserveNumber' => true]
+            ));
         });
     }
 
@@ -729,5 +803,202 @@ class PersonnummerTest extends TestCase
         $this->assertTrue($female->isNorwegianBirthNumber());
         $this->assertTrue($female->isFemale());
         $this->assertFalse($female->isMale());
+    }
+
+    /**
+     * Test Danish CPR numbers
+     */
+    public function testDanishCprNumbers()
+    {
+        // Test valid Danish CPR numbers using reasonable ages
+        $cpr1990s = new Personnummer('010190-1234', ['allowDanishCprNumber' => true]);
+        $this->assertTrue($cpr1990s->isDanishCprNumber());
+        $this->assertEquals('010190-1234', $cpr1990s->format());
+        $this->assertEquals('0101901234', $cpr1990s->format(true));
+        $this->assertEquals('19', $cpr1990s->century);
+        $this->assertEquals('01', $cpr1990s->day);
+        $this->assertEquals('01', $cpr1990s->month);
+        $this->assertEquals('90', $cpr1990s->year);
+        $this->assertEquals('1990', $cpr1990s->fullYear);
+
+        // Test 2000s century determination (7th digit = 4, year = 10)
+        $cpr2000s = new Personnummer('010110-4567', ['allowDanishCprNumber' => true]);
+        $this->assertTrue($cpr2000s->isDanishCprNumber());
+        $this->assertEquals('20', $cpr2000s->century);
+        $this->assertEquals('2010', $cpr2000s->fullYear);
+
+        // Test gender determination
+        $male = new Personnummer('010190-1235', ['allowDanishCprNumber' => true]);
+        $this->assertTrue($male->isMale());
+        $this->assertFalse($male->isFemale());
+
+        $female = new Personnummer('010190-1234', ['allowDanishCprNumber' => true]);
+        $this->assertTrue($female->isFemale());
+        $this->assertFalse($female->isMale());
+
+        // Test format consistency
+        $this->assertEquals('010190-1234', $cpr1990s->format());
+        $this->assertEquals('0101901234', $cpr1990s->format(true));
+    }
+
+    public function testDanishCprStructuredData()
+    {
+        foreach (self::$testdataStructured['danishCpr'] as $testdataType => $testdata) {
+            foreach ($testdata as $valid => $cprs) {
+                foreach ($cprs as $cpr) {
+                    $this->assertSame(
+                        $valid === 'valid',
+                        Personnummer::valid($cpr, [
+                            'allowCoordinationNumber' => false,
+                            'allowTNumber' => false,
+                            'allowVgrReserveNumber' => false,
+                            'allowSllReserveNumber' => false,
+                            'allowRvbReserveNumber' => false,
+                            'allowNorwegianBirthNumber' => false,
+                            'allowDanishCprNumber' => true,
+                        ]),
+                        sprintf(
+                            'Danish CPR %s should be %s',
+                            $cpr,
+                            ($valid === 'valid' ? 'valid' : 'not valid')
+                        )
+                    );
+                }
+            }
+        }
+    }
+
+    public function testDanishCprCenturyRules()
+    {
+        // Test century determination rules with realistic ages
+
+        // Digit 0-3: 1900-1999
+        $cpr1 = new Personnummer('010190-0123', ['allowDanishCprNumber' => true]);
+        $this->assertEquals('19', $cpr1->century);
+
+        // Digit 4: 2000-2099 if year 00-36
+        $cpr2 = new Personnummer('010120-4123', ['allowDanishCprNumber' => true]);
+        $this->assertEquals('20', $cpr2->century);
+
+        // Digit 4: 1900-1999 if year 37-99
+        $cpr3 = new Personnummer('010150-4123', ['allowDanishCprNumber' => true]);
+        $this->assertEquals('19', $cpr3->century);
+
+        // Digit 9: 2000-2099 if year 00-36 (using year 20 for reasonable age)
+        $cpr4 = new Personnummer('010120-9123', ['allowDanishCprNumber' => true]);
+        $this->assertEquals('20', $cpr4->century);
+
+        // Digit 9: 1900-1999 if year 37-99
+        $cpr5 = new Personnummer('010180-9123', ['allowDanishCprNumber' => true]);
+        $this->assertEquals('19', $cpr5->century);
+    }
+
+    public function testDanishCprWithoutDashes()
+    {
+        // Test valid Danish CPR without dash
+        $cprNoDash = new Personnummer('0104999995', ['allowDanishCprNumber' => true]);
+        $this->assertTrue($cprNoDash->isDanishCprNumber());
+        $this->assertEquals('010499-9995', $cprNoDash->format());
+        $this->assertEquals('0104999995', $cprNoDash->format(true));
+        $this->assertEquals('19', $cprNoDash->century);
+        $this->assertTrue($cprNoDash->isMale());
+        $this->assertFalse($cprNoDash->isFemale());
+
+        // Test that invalid Danish CPR fails (using dash format to ensure Danish detection)
+        $this->assertThrows(PersonnummerException::class, function () {
+            new Personnummer('010203-1234', ['allowDanishCprNumber' => true]);
+        });
+
+        // Ensure same number works with dash format
+        $cprWithDash = new Personnummer('010499-9995', ['allowDanishCprNumber' => true]);
+        $this->assertEquals($cprNoDash->format(), $cprWithDash->format());
+        $this->assertEquals($cprNoDash->century, $cprWithDash->century);
+    }
+
+    public function testAllowPersonalIdentityNumberOption()
+    {
+        // Test with a Swedish number that can't be interpreted as Danish CPR
+        $swedishNumber = '190905271474'; // From existing test data
+
+        // Should work with Swedish enabled (default)
+        $this->assertTrue(Personnummer::valid($swedishNumber));
+
+        // Should work with Swedish explicitly enabled
+        $this->assertTrue(Personnummer::valid($swedishNumber, ['allowPersonalIdentityNumber' => true]));
+
+        // Should fail with Swedish disabled
+        $this->assertFalse(Personnummer::valid($swedishNumber, ['allowPersonalIdentityNumber' => false]));
+
+        // Test that exception is thrown when Swedish is disabled
+        $this->assertThrows(PersonnummerException::class, function () use ($swedishNumber) {
+            new Personnummer($swedishNumber, ['allowPersonalIdentityNumber' => false]);
+        });
+
+        // Test with coordination number
+        $coordinationNumber = '198211059954'; // Valid Swedish number from test data
+
+        // Should work with Swedish enabled (default)
+        $this->assertTrue(Personnummer::valid($coordinationNumber));
+
+        // Should fail when Swedish is disabled
+        $this->assertFalse(Personnummer::valid($coordinationNumber, ['allowPersonalIdentityNumber' => false]));
+
+        // Test format switching: disable Swedish to force other format detection
+        // Use a number that could potentially be valid in multiple formats
+        $switchableNumber = '121212-1212';
+
+        // When Swedish is disabled but Danish CPR is enabled, should still work
+        $this->assertTrue(Personnummer::valid($switchableNumber, [
+            'allowPersonalIdentityNumber' => false,
+            'allowDanishCprNumber' => true
+        ]));
+    }
+
+    public function testIsPersonalIdentityNumber()
+    {
+        // Test regular Swedish personal identity number
+        $swedishNumber = new Personnummer('190905271474');
+        $this->assertTrue($swedishNumber->isPersonalIdentityNumber());
+        $this->assertFalse($swedishNumber->isDanishCprNumber());
+        $this->assertFalse($swedishNumber->isCoordinationNumber());
+        $this->assertFalse($swedishNumber->isReserveNumber());
+
+        // Test coordination number (should also be considered personal identity number)
+        $coordinationNumber = new Personnummer('570574-9959');
+        $this->assertTrue($coordinationNumber->isPersonalIdentityNumber());
+        $this->assertTrue($coordinationNumber->isCoordinationNumber()); // Also a coordination number
+
+        // Test Danish CPR (should NOT be personal identity number)
+        $danishCpr = new Personnummer('010499-9995', ['allowDanishCprNumber' => true]);
+        $this->assertFalse($danishCpr->isPersonalIdentityNumber());
+        $this->assertTrue($danishCpr->isDanishCprNumber());
+
+        // Test with allowPersonalIdentityNumber disabled
+        $swedishDisabled = new Personnummer('121212-1212', [
+            'allowPersonalIdentityNumber' => false,
+            'allowDanishCprNumber' => true
+        ]);
+        $this->assertFalse($swedishDisabled->isPersonalIdentityNumber());
+        $this->assertTrue($swedishDisabled->isDanishCprNumber()); // Should be processed as Danish instead
+
+        // Test various number types from test data
+        foreach (self::$testdataList as $testdata) {
+            if ($testdata['valid'] && $testdata['type'] === 'personalIdentityNumber') {
+                $p = new Personnummer($testdata['separated_format']);
+                $this->assertTrue(
+                    $p->isPersonalIdentityNumber(),
+                    "SSN {$testdata['separated_format']} should be personal identity number"
+                );
+            }
+
+            if ($testdata['valid'] && $testdata['type'] === 'coordinationNumber') {
+                $p = new Personnummer($testdata['separated_format']);
+                $this->assertTrue(
+                    $p->isPersonalIdentityNumber(),
+                    "Coordination number {$testdata['separated_format']} should be personal identity number"
+                );
+                $this->assertTrue($p->isCoordinationNumber());
+            }
+        }
     }
 }

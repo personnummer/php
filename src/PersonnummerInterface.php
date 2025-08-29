@@ -18,9 +18,9 @@ namespace Personnummer;
  */
 interface PersonnummerInterface
 {
-    public static function parse(string $ssn, array $options = []): self;
+    public static function parse(string $identificationNumber, array $options = []): self;
 
-    public static function valid(string $ssn, array $options = []): bool;
+    public static function valid(string $identificationNumber, array $options = []): bool;
 
     public function format(bool $longFormat = false): string;
 
@@ -30,5 +30,5 @@ interface PersonnummerInterface
 
     public function isCoordinationNumber(): bool;
 
-    public function __construct(string $ssn, array $options = []);
+    public function __construct(string $identificationNumber, array $options = []);
 }

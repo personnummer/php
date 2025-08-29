@@ -6,7 +6,7 @@
     "separated_format": "150916-0006",
     "separated_long": "20150916-0006",
     "valid": false,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
     "isMale": false,
     "isFemale": true
   },
@@ -17,7 +17,7 @@
     "separated_format": "090527+1474",
     "separated_long": "19090527+1474",
     "valid": true,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
     "isMale": true,
     "isFemale": false
   },
@@ -28,7 +28,7 @@
     "separated_format": "870704-9996",
     "separated_long": "19870704-9996",
     "valid": false,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
     "isMale": true,
     "isFemale": false
   },
@@ -39,7 +39,7 @@
     "separated_format": "821105-9954",
     "separated_long": "19821105-9954",
     "valid": true,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
     "isMale": true,
     "isFemale": false
   },
@@ -50,7 +50,7 @@
     "separated_format": "390182-9913",
     "separated_long": "19390182-9913",
     "valid": false,
-    "type": "con",
+    "type": "coordinationNumber",
     "isMale": true,
     "isFemale": false
   },
@@ -61,7 +61,7 @@
     "separated_format": "570574-9959",
     "separated_long": "19570574-9959",
     "valid": true,
-    "type": "con",
+    "type": "coordinationNumber",
     "isMale": true,
     "isFemale": false
   },
@@ -72,7 +72,7 @@
     "separated_format": "121120-9941",
     "separated_long": "20121120-9941",
     "valid": false,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
     "isMale": false,
     "isFemale": true
   },
@@ -83,7 +83,7 @@
     "separated_format": "901211-9948",
     "separated_long": "19901211-9948",
     "valid": true,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
     "isMale": false,
     "isFemale": true
   },
@@ -94,7 +94,7 @@
     "separated_format": "121075-9984",
     "separated_long": "20121075-9984",
     "valid": false,
-    "type": "con",
+    "type": "coordinationNumber",
     "isMale": false,
     "isFemale": true
   },
@@ -105,7 +105,7 @@
     "separated_format": "730674-9982",
     "separated_long": "19730674-9982",
     "valid": true,
-    "type": "con",
+    "type": "coordinationNumber",
     "isMale": false,
     "isFemale": true
   },
@@ -116,7 +116,7 @@
     "separated_format": "791221+9990",
     "separated_long": "18791221+9990",
     "valid": true,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
     "isMale": true,
     "isFemale": false
   },
@@ -127,7 +127,7 @@
     "separated_format": "001209-9891",
     "separated_long": "20001209-9891",
     "valid": true,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
     "isMale": true,
     "isFemale": false
   },
@@ -138,7 +138,150 @@
     "separated_format": "090527 1474",
     "separated_long": "19090527 1474",
     "valid": false,
-    "type": "ssn",
+    "type": "personalIdentityNumber",
+    "isMale": true,
+    "isFemale": false
+  },
+  {
+    "integer": 27034513436,
+    "long_format": "27034513436",
+    "short_format": "27034513436",
+    "separated_format": "27034513436",
+    "separated_long": "27034513436",
+    "valid": true,
+    "type": "norwegianBirthNumber",
+    "isMale": false,
+    "isFemale": true
+  },
+  {
+    "integer": 0,
+    "long_format": "19561110K064",
+    "short_format": "561110-K064",
+    "separated_format": "561110-K064",
+    "separated_long": "19561110-K064",
+    "valid": true,
+    "type": "vgrReserveNumber",
+    "isMale": false,
+    "isFemale": true
+  },
+  {
+    "integer": 0,
+    "long_format": "19770711K783",
+    "short_format": "770711-K783",
+    "separated_format": "770711-K783",
+    "separated_long": "19770711-K783",
+    "valid": true,
+    "type": "vgrReserveNumber",
+    "isMale": false,
+    "isFemale": true
+  },
+  {
+    "integer": 0,
+    "long_format": "19650308M774",
+    "short_format": "650308-M774",
+    "separated_format": "650308-M774",
+    "separated_long": "19650308-M774",
+    "valid": true,
+    "type": "vgrReserveNumber",
+    "isMale": true,
+    "isFemale": false
+  },
+  {
+    "integer": 0,
+    "long_format": "19410211X868",
+    "short_format": "410211-X868",
+    "separated_format": "410211-X868",
+    "separated_long": "19410211-X868",
+    "valid": true,
+    "type": "vgrReserveNumber",
+    "isMale": false,
+    "isFemale": false
+  },
+  {
+    "integer": 0,
+    "long_format": "19820202R620",
+    "short_format": "820202-R620",
+    "separated_format": "820202-R620",
+    "separated_long": "19820202-R620",
+    "valid": true,
+    "type": "rvbReserveNumber",
+    "isMale": false,
+    "isFemale": true
+  },
+  {
+    "integer": 0,
+    "long_format": "19820202R630",
+    "short_format": "820202-R630",
+    "separated_format": "820202-R630",
+    "separated_long": "19820202-R630",
+    "valid": true,
+    "type": "rvbReserveNumber",
+    "isMale": true,
+    "isFemale": false
+  },
+  {
+    "integer": 0,
+    "long_format": "20020202R220",
+    "short_format": "020202-R220",
+    "separated_format": "020202-R220",
+    "separated_long": "20020202-R220",
+    "valid": true,
+    "type": "rvbReserveNumber",
+    "isMale": false,
+    "isFemale": true
+  },
+  {
+    "integer": 0,
+    "long_format": "20020202R230",
+    "short_format": "020202-R230",
+    "separated_format": "020202-R230",
+    "separated_long": "20020202-R230",
+    "valid": true,
+    "type": "rvbReserveNumber",
+    "isMale": true,
+    "isFemale": false
+  },
+  {
+    "integer": 992003765399,
+    "long_format": "992003765399",
+    "short_format": "992003765399",
+    "separated_format": "992003765399",
+    "separated_long": "992003765399",
+    "valid": true,
+    "type": "sllReserveNumber",
+    "isMale": true,
+    "isFemale": false
+  },
+  {
+    "integer": 992007523174,
+    "long_format": "992007523174",
+    "short_format": "992007523174",
+    "separated_format": "992007523174",
+    "separated_long": "992007523174",
+    "valid": true,
+    "type": "sllReserveNumber",
+    "isMale": true,
+    "isFemale": false
+  },
+  {
+    "integer": 992000615217,
+    "long_format": "992000615217",
+    "short_format": "992000615217",
+    "separated_format": "992000615217",
+    "separated_long": "992000615217",
+    "valid": true,
+    "type": "sllReserveNumber",
+    "isMale": true,
+    "isFemale": false
+  },
+  {
+    "integer": 992012608713,
+    "long_format": "992012608713",
+    "short_format": "992012608713",
+    "separated_format": "992012608713",
+    "separated_long": "992012608713",
+    "valid": true,
+    "type": "sllReserveNumber",
     "isMale": true,
     "isFemale": false
   }
