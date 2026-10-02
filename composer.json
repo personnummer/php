@@ -41,7 +41,7 @@
     "ext-json": "*",
     "squizlabs/php_codesniffer": "^4.0.1",
     "jchook/phpunit-assert-throws": "^1.0",
-    "phpunit/phpunit": "^10.5.60",
+    "phpunit/phpunit": "^13.0.0",
     "phpcompatibility/php-compatibility": "^10.0.0-alpha2",
     "dealerdirect/phpcodesniffer-composer-installer": "^v1.2.0",
     "roave/security-advisories": "dev-latest"
