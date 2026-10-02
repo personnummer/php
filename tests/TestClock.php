@@ -9,7 +9,7 @@ class TestClock implements ClockInterface
 {
     private readonly DateTimeImmutable $time;
 
-    public function __construct(DateTimeImmutable $time = null)
+    public function __construct(?DateTimeImmutable $time = null)
     {
         $this->time = $time;
     }
