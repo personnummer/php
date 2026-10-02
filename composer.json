@@ -5,10 +5,6 @@
   "description": "Validate Swedish social security numbers",
   "authors": [
     {
-      "name": "Fredrik Forsmo",
-      "homepage": "https://github.com/frozzare"
-    },
-    {
       "name": "Rasmus Bengtsson",
       "homepage": "https://github.com/rasmusbe"
     },
