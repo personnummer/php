@@ -29,8 +29,8 @@ class PersonnummerTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::$testdataList       = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/list.json'), true, 512, JSON_THROW_ON_ERROR); // phpcs:ignore
-        self::$testdataStructured = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/structured.json'), true, 512, JSON_THROW_ON_ERROR); // phpcs:ignore
+        self::$testdataList       = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/HEAD/testdata/list.json'), true, 512, JSON_THROW_ON_ERROR); // phpcs:ignore
+        self::$testdataStructured = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/HEAD/testdata/structured.json'), true, 512, JSON_THROW_ON_ERROR); // phpcs:ignore
     }
 
     public function testParse(): void
