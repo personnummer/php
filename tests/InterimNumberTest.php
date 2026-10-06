@@ -21,7 +21,7 @@ class InterimNumberTest extends TestCase
     private static function init(): void
     {
         if (self::$interim === null) {
-            $data = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/master/testdata/interim.json'), true, 512, JSON_THROW_ON_ERROR); // phpcs:ignore
+            $data = json_decode(file_get_contents('https://raw.githubusercontent.com/personnummer/meta/HEAD/testdata/interim.json'), true, 512, JSON_THROW_ON_ERROR); // phpcs:ignore
             self::$interim = array_map(
                 static fn(array $p) => new PersonnummerData($p),
                 $data,
